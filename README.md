@@ -10,7 +10,7 @@
 This module contains a collection of Go utilities that could be mainly used by Astronetes developments. The main goal
 of this module is to provide a set of handful and reusable API's to be used when building Kubernetes operators.
 
-## History and proeject status
+## History and project status
 
 This module is still `in active development` and the API is still subject to breaking changes.
 
