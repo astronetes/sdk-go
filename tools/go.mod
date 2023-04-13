@@ -1,4 +1,4 @@
-module github.com/astrokube/scaffolder/build
+module github.com/astronetes/sdk-go/build
 
 go 1.20
 
