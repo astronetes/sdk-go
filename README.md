@@ -52,7 +52,7 @@ The SDK is composed of @TODO components,
 
 ### Examples
 
-A rich and growing set of examples of usage of this module can be found in folder `eamples`.
+A rich and growing set of examples of usage of this module can be found in folder `examples`.
 
 
 ### Contributing
