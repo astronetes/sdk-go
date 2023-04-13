@@ -25,7 +25,7 @@ Please make sure to read and observe our [Contributor Code of Conduct](CODE_OF_C
 4. Fork the desired repo, develop and test your code changes.
 5. Submit a pull request.
 
-## How to build the go-sdk module locally
+## How to build the sdk-go module locally
 
 Once you have  completed the changes and added new tests you just need to run teh command `make` to check that everything
 works as expected.
