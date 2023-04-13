@@ -1,0 +1,6 @@
+id: {{.var1}}
+person: {{.var2}}
+option:
+  - {{.var1}}
+  - {{.var2}}
+children: {{.var1}}-{{.var2}}
