@@ -16,6 +16,7 @@ func GetFileContent(dirPath, filename string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error reading the file info for file '%s': '%v'", filename, err)
 	}
+
 	if info.IsDir() {
 		return nil, fmt.Errorf("the provided path is a directory not a file")
 	}

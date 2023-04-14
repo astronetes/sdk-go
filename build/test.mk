@@ -3,6 +3,10 @@ COVERAGE_REPORT	?= coverage.html
 COVERAGE_XML	?= coverage.xml
 TEST_TIMEOUT  	= 300
 
+.PHONY: test-init
+test-init: ## download temporary resources for tests
+	sh $(PWD)/scripts/setup-testdata.sh
+
 .PHONY: test
 test: ## run unit tests
 	@echo "=== $(PROJECT_NAME) === [ test ]: running unit tests..."
