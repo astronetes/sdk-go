@@ -19,8 +19,9 @@ func installChartByDefault() {
 	pwd, _ := os.Getwd()
 	baseDir := fmt.Sprintf("file://%s", pwd)
 	spec := helmchart.
-		LoadPackagedChart(filepath.Join(baseDir, "tmp/redis-operator-3.1.2.tgz"))
-	//LoadPackagedChart(filepath.Join(baseDir, "tmp/mysql-9.7.1.tgz")).
+		LoadPackagedChart(filepath.Join(baseDir, "tmp/mysql-9.7.1.tgz"))
+	//	LoadPackagedChart(filepath.Join(baseDir, "tmp/redis-operator-3.1.2.tgz"))
+
 	c, err := helmchart.NewClient()
 	if err != nil {
 		println(err.Error())
@@ -32,7 +33,6 @@ func installChartByDefault() {
 		a.CreateNamespace = true
 		a.ReleaseName = releaseName
 		a.Namespace = namespace
-
 	}); err != nil {
 		print(err.Error())
 	}
@@ -119,7 +119,7 @@ func chekHelmChart() {
 		spec := helmchart.LoadPackagedChart(filepath.Join(baseDir, "tmp/prometheus-nginx-exporter-0.1.0.tgz")).
 			WithValuesTemplate(filepath.Join(baseDir, "k8s/helmchart/testdata/prometheus-nginx-exporter-0.1.0-values.yml")).
 			With("replicaCount", 3).
-			WithEntries(map[string]interface{}{
+			WithValues(map[string]interface{}{
 				"imageRepository": "nginx/nginx-prometheus-exporter",
 				"serviceAccount": map[string]interface{}{
 					"create": true,
