@@ -13,6 +13,6 @@ func Install(ctx context.Context, action *action.Install,
 	if err != nil {
 		return err
 	}
-	println(release.Info.Status.String())
+	println(release.Manifest)
 	return nil
 }

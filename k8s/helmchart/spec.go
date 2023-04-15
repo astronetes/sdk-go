@@ -21,7 +21,7 @@ const (
 type Spec interface {
 	WithValuesTemplate(valuesTemplatePath string) Spec
 	With(key string, value interface{}) Spec
-	WithEntries(entries map[string]interface{}) Spec
+	WithValues(entries map[string]interface{}) Spec
 	values() (map[string]interface{}, error)
 	chart() (*chart.Chart, error)
 	chartAndValues() (*chart.Chart, map[string]interface{}, error)
@@ -107,7 +107,7 @@ func (s *spec) With(key string, value interface{}) Spec {
 	return s
 }
 
-func (s *spec) WithEntries(entries map[string]interface{}) Spec {
+func (s *spec) WithValues(entries map[string]interface{}) Spec {
 	maps.Copy(s.vars, entries)
 	return s
 }
