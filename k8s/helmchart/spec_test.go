@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/astronetes/sdk-go/internal/testfuncs"
+	"github.com/google/go-cmp/cmp"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 )
@@ -108,6 +109,89 @@ func Test_spec_chart(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("chart() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_spec_values(t *testing.T) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	type fields struct {
+		valuesTemplatePath string
+		vars               map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    map[string]interface{}
+		wantErr bool
+	}{
+		{
+			name: "values template path is not provided",
+			fields: fields{
+				vars: map[string]interface{}{
+					"firstName": "John",
+					"lastNAme":  "Doe",
+				},
+			},
+			want: map[string]interface{}{
+				"firstName": "John",
+				"lastNAme":  "Doe",
+			},
+			wantErr: false,
+		},
+		{
+			name: "only template path is provided( It doesn't contain variables)",
+			fields: fields{
+				valuesTemplatePath: "file://" + pwd + "/testdata/templateWithoutVariables.tmpl.yml",
+			},
+			want: map[string]interface{}{
+				"primary": map[string]any{
+					"replicasCount": float64(2),
+				},
+				"docker": map[string]interface{}{
+					"image": map[string]any{
+						"tag": "v0.0.1",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "both vars & template (w/o variables)  are provided",
+			fields: fields{
+				valuesTemplatePath: "file://" + pwd + "/testdata/templateWithoutVariables.tmpl.yml",
+			},
+			want: map[string]interface{}{
+				"primary": map[string]any{
+					"replicasCount": float64(2),
+				},
+				"docker": map[string]interface{}{
+					"image": map[string]any{
+						"tag": "v0.0.1",
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &spec{
+				valuesTemplatePath: tt.fields.valuesTemplatePath,
+				vars:               tt.fields.vars,
+			}
+			got, err := s.values()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("values() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("MakeGatewayInfo() mismatch (-want +got):\n%s", diff)
+			}
+
 		})
 	}
 }

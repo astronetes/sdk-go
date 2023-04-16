@@ -30,7 +30,7 @@ golangci-*
 
 ## Temporary resources for testing purpose
 tmp
-*/charts-temp
+**/charts-temp
 
 ## Temporary markdown files
 TODO.md
