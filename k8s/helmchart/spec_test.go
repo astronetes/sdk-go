@@ -202,6 +202,28 @@ func Test_spec_values(t *testing.T) {
 			},
 			wantErr: false,
 		},
+
+		{
+			name: "template with variables, but not all the vars are provided",
+			fields: fields{
+				valuesTemplatePath: "file://" + pwd + "/testdata/templateWithVariables.tmpl.yml",
+				vars: map[string]interface{}{
+					"replicasCount": float64(3),
+				},
+			},
+			want: map[string]interface{}{
+				"primary": map[string]any{
+					"replicasCount": float64(3),
+				},
+				"docker": map[string]interface{}{
+					"image": map[string]any{
+						"repository": "nginx-operator",
+						"tag":        "v0.0.1",
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

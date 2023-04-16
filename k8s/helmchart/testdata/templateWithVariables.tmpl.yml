@@ -3,4 +3,4 @@ primary:
 docker:
   image:
     repository: nginx-operator
-    tag: {{.docker.image.tag}}
+    tag: {{or .docker.image.tag "v0.0.1"}}
