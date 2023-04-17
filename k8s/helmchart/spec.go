@@ -19,7 +19,7 @@ const (
 )
 
 type Spec interface {
-	WithValuesTemplate(valuesTemplatePath string) Spec
+	WithValuesFileTemplate(valuesTemplatePath string) Spec
 	With(key string, value interface{}) Spec
 	WithValues(entries map[string]interface{}) Spec
 	values() (map[string]interface{}, error)
@@ -109,7 +109,7 @@ func LoadPackagedChart(chartPath string) Spec {
 	}
 }
 
-func (s *spec) WithValuesTemplate(valuesTemplatePath string) Spec {
+func (s *spec) WithValuesFileTemplate(valuesTemplatePath string) Spec {
 	s.valuesTemplatePath = valuesTemplatePath
 
 	return s

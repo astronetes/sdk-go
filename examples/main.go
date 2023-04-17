@@ -82,7 +82,7 @@ func installChartWithVariablesAndPath(ctx context.Context) {
 	baseDir := fmt.Sprintf("file://%s", pwd)
 	spec := helmchart.
 		LoadPackagedChart(filepath.Join(baseDir, "tmp/mysql-9.7.1.tgz")).
-		WithValuesTemplate(filepath.Join(baseDir, "tmp/mysql-values.yml"))
+		WithValuesFileTemplate(filepath.Join(baseDir, "tmp/mysql-values.yml"))
 
 	c, err := helmchart.NewClient(ctx)
 	if err != nil {
@@ -128,7 +128,7 @@ func chekHelmChart(ctx context.Context) {
 
 	/**
 		spec := helmchart.LoadPackagedChart(filepath.Join(baseDir, "tmp/prometheus-nginx-exporter-0.1.0.tgz")).
-			WithValuesTemplate(filepath.Join(baseDir, "k8s/helmchart/testdata/prometheus-nginx-exporter-0.1.0-values.yml")).
+			WithValuesFileTemplate(filepath.Join(baseDir, "k8s/helmchart/testdata/prometheus-nginx-exporter-0.1.0-values.yml")).
 			With("replicaCount", 3).
 			WithValues(map[string]interface{}{
 				"imageRepository": "nginx/nginx-prometheus-exporter",
