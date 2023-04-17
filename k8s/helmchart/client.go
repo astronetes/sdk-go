@@ -121,7 +121,6 @@ func (c *client) Install(ctx context.Context, spec Spec, installFunc func(instal
 }
 
 func (c *client) Uninstall(ctx context.Context, release string, uninstallFunc func(install *action.Uninstall)) error {
-
 	action := action.NewUninstall(c.cfg)
 	uninstallFunc(action)
 
