@@ -228,7 +228,6 @@ func Test_spec_values(t *testing.T) {
 		{
 			name: "text template with variables and provided vars",
 			fields: fields{
-
 				valuesTemplateContent: "" +
 					"primary:\n" +
 					"  replicasCount: {{.replicasCount}}\n" +

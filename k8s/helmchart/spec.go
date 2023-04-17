@@ -69,7 +69,7 @@ func (s *spec) values() (map[string]interface{}, error) {
 	if !s.hasValuesTemplate() {
 		return s.vars, nil
 	}
-	var content = s.valuesTemplateContent
+	content := s.valuesTemplateContent
 	if s.valuesTemplatePath != "" {
 		contentBytes, err := readFile(s.valuesTemplatePath)
 		if err != nil {
@@ -115,6 +115,7 @@ func LoadPackagedChart(chartPath string) Spec {
 		_values:               nil,
 	}
 }
+
 func (s *spec) WithValuesTextTemplate(text string) Spec {
 	s.valuesTemplateContent = text
 	s.valuesTemplatePath = ""
