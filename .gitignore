@@ -27,3 +27,11 @@ vendor
 
 ## Reports
 golangci-*
+
+## Temporary resources for testing purpose
+tmp
+**/charts-temp
+
+## Temporary markdown files
+TODO.md
+

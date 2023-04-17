@@ -1,0 +1,5 @@
+primary:
+  replicasCount: 2
+docker:
+  image:
+    tag: v0.0.1

@@ -50,6 +50,11 @@ The SDK is composed of @TODO components,
 
 ## Getting started
 
+###Pre-requisites
+
+* Go 1.19+
+* Helm command (required exclusively for testing purpose)
+
 ### Examples
 
 A rich and growing set of examples of usage of this module can be found in folder `examples`.

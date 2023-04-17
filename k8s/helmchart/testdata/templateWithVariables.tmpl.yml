@@ -1,0 +1,6 @@
+primary:
+  replicasCount: {{.replicasCount}}
+docker:
+  image:
+    repository: nginx-operator
+    tag: {{or .docker.image.tag "v0.0.1"}}

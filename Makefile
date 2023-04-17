@@ -3,7 +3,7 @@ GO  = GOFLAGS=-mod=readonly go
 GO_CMD          ?= go
 UNAME := $(shell uname)
 
-all: init fmt #test lint
+all: init fmt test lint
 
 help: ## Display this help screen
 	@echo "Makefile targets:"
