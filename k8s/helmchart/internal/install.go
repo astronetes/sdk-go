@@ -17,7 +17,9 @@ func Install(_ context.Context, action *action.Install,
 		return fmt.Errorf("error installing helm chart: '%w", err)
 	}
 
-	log.Log.V(1).Info("release '%s' with status '%s'", release.Name, release.Info.Status)
+	log.Log.V(1).Info("installation completed successfully",
+		"release", release.Name, "status", release.Info.Status,
+		"chart", fmt.Sprintf("%s/v%s", chart.Name(), chart.Metadata.Version))
 
 	return nil
 }

@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/astronetes/sdk-go v0.0.0
+	github.com/go-logr/zapr v1.2.3
 	go.uber.org/zap v1.19.0
 	helm.sh/helm/v3 v3.11.3
 )
@@ -143,7 +144,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.26.2 // indirect
-	k8s.io/apiextensions-apiserver v0.26.0 // indirect
+	k8s.io/apiextensions-apiserver v0.26.1 // indirect
 	k8s.io/apimachinery v0.26.2 // indirect
 	k8s.io/apiserver v0.26.2 // indirect
 	k8s.io/cli-runtime v0.26.0 // indirect

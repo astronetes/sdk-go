@@ -28,7 +28,7 @@ func setDefaultLogger() {
 
 func installChartByDefault(ctx context.Context) {
 	pwd, _ := os.Getwd()
-	baseDir := fmt.Sprintf("file://%s", pwd)
+	baseDir := fmt.Sprintf("file://%s", filepath.Dir(pwd))
 	spec := helmchart.
 		LoadPackagedChart(filepath.Join(baseDir, "tmp/mysql-9.7.1.tgz"))
 	//	LoadPackagedChart(filepath.Join(baseDir, "tmp/redis-operator-3.1.2.tgz"))
