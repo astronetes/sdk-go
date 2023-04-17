@@ -44,16 +44,18 @@ func (s *spec) chart() (*chart.Chart, error) {
 	if s._chart != nil {
 		return s._chart, nil
 	}
+
 	content, err := readFile(s.chartPath)
 	if err != nil {
-		return nil, fmt.Errorf("error reading content of packaged chart: ''%v", err)
+		return nil, fmt.Errorf("error reading content of packaged chart: ''%w", err)
 	}
+
 	if s.dist == packaged {
 		s._chart, err = loader.LoadArchive(bytes.NewReader(content))
 		if err != nil {
-			return nil, fmt.Errorf("error loading packaged chart: ''%v", err)
+			return nil, fmt.Errorf("error loading packaged chart: ''%w", err)
 		}
-		return s._chart, err
+		return s._chart, nil
 	}
 	return nil, fmt.Errorf("unsupported distribution type of chart")
 }
@@ -62,12 +64,13 @@ func (s *spec) values() (map[string]interface{}, error) {
 	if s._values != nil {
 		return s._values, nil
 	}
+
 	if !s.hasValuesTemplate() {
 		return s.vars, nil
 	}
 	content, err := readFile(s.valuesTemplatePath)
 	if err != nil {
-		return nil, fmt.Errorf("error reading content of values template: ''%v", err)
+		return nil, fmt.Errorf("error reading content of values template: ''%w", err)
 	}
 	valuesContent, err := gotemplate.ApplyTemplateWithVariables(defaultValuesTemplateName, string(content), s.vars)
 	if err != nil {
@@ -75,7 +78,7 @@ func (s *spec) values() (map[string]interface{}, error) {
 	}
 	s._values = map[string]interface{}{}
 	if err := yaml.Unmarshal([]byte(valuesContent), &s._values); err != nil {
-		return nil, fmt.Errorf("error unmarshaling the values map: '%v'", err.Error())
+		return nil, fmt.Errorf("error unmarshaling the values map: '%w'", err)
 	}
 	return s._values, nil
 }
@@ -92,22 +95,34 @@ func (s *spec) chartAndValues() (*chart.Chart, map[string]interface{}, error) {
 	return chart, values, nil
 }
 
-// LoadPackagedChart
+// LoadPackagedChart initializes a Spec struct from a packaged chart spec.
+// The path to the chart can reference to any of the supported filesystem.
+// It returns a pointer to a Spec.
 func LoadPackagedChart(chartPath string) Spec {
-	return &spec{dist: packaged, chartPath: chartPath, vars: make(map[string]interface{}, 0)}
+	return &spec{
+		dist:               packaged,
+		chartPath:          chartPath,
+		valuesTemplatePath: "",
+		vars:               make(map[string]interface{}, 0),
+		_chart:             nil,
+		_values:            nil,
+	}
 }
 
 func (s *spec) WithValuesTemplate(valuesTemplatePath string) Spec {
 	s.valuesTemplatePath = valuesTemplatePath
+
 	return s
 }
 
 func (s *spec) With(key string, value interface{}) Spec {
 	s.vars[key] = value
+
 	return s
 }
 
 func (s *spec) WithValues(entries map[string]interface{}) Spec {
 	maps.Copy(s.vars, entries)
+
 	return s
 }

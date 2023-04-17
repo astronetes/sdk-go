@@ -12,12 +12,11 @@ func PullPackagedChart(repoName string, repoURL string, artifact string, version
 		fmt.Printf("helm pull is skipped, the file '%s' already exists", localPath)
 		return nil
 	}
-	var scriptContent = "" +
+	scriptContent := "" +
 		fmt.Sprintf("helm repo add %s %s", repoName, repoURL) + "\n" +
 		fmt.Sprintf("helm pull %s/%s --version %s", repoName, artifact, version)
 
 	path, err := CreateTemporalFile(scriptContent)
-
 	if err != nil {
 		return err
 	}

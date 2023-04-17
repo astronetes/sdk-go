@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/astronetes/sdk-go/k8s/helmchart/internal"
+	"github.com/astronetes/sdk-go/log"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/kube"
@@ -30,9 +31,10 @@ func WithRESTClientGetter(restClientGetter genericclioptions.RESTClientGetter) C
 	return func(c *ClientBuilder) {
 		c.restClientGetter = restClientGetter
 		c.kubeClient = &kube.Client{
-			Factory: util.NewFactory(restClientGetter),
+			Namespace: "",
+			Factory:   util.NewFactory(restClientGetter),
 			Log: func(s string, i ...interface{}) {
-				fmt.Printf(s, i)
+				log.Log.V(log.Info).Info(s, i...)
 			},
 		}
 	}
@@ -57,24 +59,26 @@ type ClientBuilder struct {
 	registryClient   *registry.Client
 }
 
-func NewClient(opts ...ClientOption) (Client, error) {
+func NewClient(_ context.Context, opts ...ClientOption) (Client, error) {
 	var (
 		defaultRESTClientGetter = genericclioptions.NewConfigFlags(false)
 		defaultReleaseStorage   = storage.Init(driver.NewMemory())
 		kubeClient              = &kube.Client{
-			Factory: util.NewFactory(defaultRESTClientGetter),
+			Namespace: "",
+			Factory:   util.NewFactory(defaultRESTClientGetter),
 			Log: func(s string, i ...interface{}) {
-				fmt.Printf(s, i)
+				log.Log.V(log.Info).Info(s, i...)
 			},
 		}
 	)
+
 	defaultRegistryClient, err := registry.NewClient(
 		registry.ClientOptDebug(false),
 		registry.ClientOptEnableCache(true),
 		registry.ClientOptWriter(os.Stderr),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error initializing registry client: '%v'", err)
+		return nil, fmt.Errorf("error initializing registry client: '%w'", err)
 	}
 
 	builder := &ClientBuilder{
@@ -97,17 +101,20 @@ func NewClient(opts ...ClientOption) (Client, error) {
 		},
 	}
 	cfg.Releases.Log = func(v string, args ...interface{}) {
-		fmt.Printf(v, args)
+		log.Log.V(log.Info).Info(v, args...)
 	}
+
 	return &client{cfg: cfg}, nil
 }
 
-func (c *client) Install(ctx context.Context, spec Spec, fn func(install *action.Install)) error {
+func (c *client) Install(ctx context.Context, spec Spec, installFunc func(install *action.Install)) error {
 	chart, values, err := spec.chartAndValues()
 	if err != nil {
 		return err
 	}
+
 	action := action.NewInstall(c.cfg)
-	fn(action)
+	installFunc(action)
+
 	return internal.Install(ctx, action, chart, values)
 }

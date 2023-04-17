@@ -7,6 +7,9 @@ import (
 	"path/filepath"
 
 	"github.com/astronetes/sdk-go/k8s/helmchart"
+	"github.com/astronetes/sdk-go/log"
+	"github.com/go-logr/zapr"
+	"go.uber.org/zap"
 	"helm.sh/helm/v3/pkg/action"
 )
 
@@ -15,19 +18,26 @@ const (
 	namespace   = "astronetes-testing"
 )
 
-func installChartByDefault() {
+func setDefaultLogger() {
+	zapLog, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	log.SetLogger(zapr.NewLogger(zapLog))
+}
+
+func installChartByDefault(ctx context.Context) {
 	pwd, _ := os.Getwd()
 	baseDir := fmt.Sprintf("file://%s", pwd)
 	spec := helmchart.
 		LoadPackagedChart(filepath.Join(baseDir, "tmp/mysql-9.7.1.tgz"))
 	//	LoadPackagedChart(filepath.Join(baseDir, "tmp/redis-operator-3.1.2.tgz"))
 
-	c, err := helmchart.NewClient()
+	c, err := helmchart.NewClient(ctx)
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
 	}
-	ctx := context.Background()
 
 	if err := c.Install(ctx, spec, func(a *action.Install) {
 		a.CreateNamespace = true
@@ -38,7 +48,7 @@ func installChartByDefault() {
 	}
 }
 
-func installChartWithVariables() {
+func installChartWithVariables(ctx context.Context) {
 	pwd, _ := os.Getwd()
 	baseDir := fmt.Sprintf("file://%s", pwd)
 	spec := helmchart.
@@ -51,12 +61,12 @@ func installChartWithVariables() {
 		"tag": "ivan",
 	})
 	*/
-	c, err := helmchart.NewClient()
+	c, err := helmchart.NewClient(ctx)
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
 	}
-	ctx := context.Background()
+
 	if err := c.Install(ctx, spec, func(a *action.Install) {
 		a.CreateNamespace = true
 		a.ReleaseName = releaseName
@@ -67,19 +77,19 @@ func installChartWithVariables() {
 	}
 }
 
-func installChartWithVariablesAndPath() {
+func installChartWithVariablesAndPath(ctx context.Context) {
 	pwd, _ := os.Getwd()
 	baseDir := fmt.Sprintf("file://%s", pwd)
 	spec := helmchart.
 		LoadPackagedChart(filepath.Join(baseDir, "tmp/mysql-9.7.1.tgz")).
 		WithValuesTemplate(filepath.Join(baseDir, "tmp/mysql-values.yml"))
 
-	c, err := helmchart.NewClient()
+	c, err := helmchart.NewClient(ctx)
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
 	}
-	ctx := context.Background()
+
 	if err := c.Install(ctx, spec, func(a *action.Install) {
 		a.CreateNamespace = true
 		a.ReleaseName = releaseName
@@ -91,24 +101,25 @@ func installChartWithVariablesAndPath() {
 }
 
 func main() {
-	installChartByDefault()
-	//installChartWithVariables()
-	//installChartWithVariablesAndPath()
+	ctx := context.Background()
+	setDefaultLogger()
+	installChartByDefault(ctx)
+	// installChartWithVariables(ctx)
+	// installChartWithVariablesAndPath(ctx)
 }
 
-func chekHelmChart() {
+func chekHelmChart(ctx context.Context) {
 	pwd, _ := os.Getwd()
 	baseDir := filepath.Join("file://%s", pwd)
 
 	spec := helmchart.
 		LoadPackagedChart(filepath.Join(baseDir, "tmp/mysql-9.7.1.tgz"))
 
-	c, err := helmchart.NewClient()
+	c, err := helmchart.NewClient(ctx)
 	if err != nil {
 		os.Exit(1)
 		println(err.Error())
 	}
-	ctx := context.Background()
 	c.Install(ctx, spec, func(a *action.Install) {
 		a.CreateNamespace = true
 		a.ReleaseName = releaseName

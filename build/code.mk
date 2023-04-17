@@ -1,4 +1,5 @@
 GOIMPORT		= goimport
+GOFUMPT			= gofumpt
 GOLINTER		?= golangci-lint
 GIT_HOOKS_PATH 	?= .githooks
 
@@ -10,7 +11,8 @@ git-hooks: ## setup githooks for the local repository
 .PHONY: fmt
 fmt: ## format the code
 	@echo "=== $(PROJECT_NAME) === [ fmt ]: formatting the code with goimport..."
-	@$($(GOIMPORT) -d $(find . -type f -name '*.go' -not -path "./vendor/*")
+	@#$($(GOFUMPT)  $(find . -type f -name '*.go' -not -path "./vendor/*")
+	@goimports -w . && gofumpt -w .
 
 .PHONY: lint
 lint:

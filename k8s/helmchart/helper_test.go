@@ -10,7 +10,7 @@ import (
 )
 
 func Test_readFile(t *testing.T) {
-	var fileContent = `
+	fileContent := `
 	Hello my friend,
 		How're you?
 	Regards'

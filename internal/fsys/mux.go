@@ -1,6 +1,7 @@
 package fsys
 
 import (
+	"fmt"
 	"io/fs"
 	"sync"
 
@@ -11,8 +12,8 @@ import (
 )
 
 var (
-	instance *singleton
-	lock     = &sync.Mutex{}
+	_instance *singleton
+	lock      = &sync.Mutex{}
 )
 
 type singleton struct {
@@ -20,21 +21,28 @@ type singleton struct {
 }
 
 func (s *singleton) FS(uri string) (fs.FS, error) {
-	return s.mux.Lookup(uri)
+	fs, err := s.mux.Lookup(uri)
+	if err != nil {
+		return nil, fmt.Errorf("error obtaining the filesystem: '%w'", err)
+	}
+
+	return fs, nil
 }
 
 func getInstance() *singleton {
-	if instance == nil {
+	if _instance == nil {
 		lock.Lock()
 		defer lock.Unlock()
-		if instance == nil {
-			instance = &singleton{
+
+		if _instance == nil {
+			_instance = &singleton{
 				mux: fsimpl.FSMux{},
 			}
-			instance.mux.Add(filefs.FS)
-			instance.mux.Add(httpfs.FS)
-			instance.mux.Add(gitfs.FS)
+			_instance.mux.Add(filefs.FS)
+			_instance.mux.Add(httpfs.FS)
+			_instance.mux.Add(gitfs.FS)
 		}
 	}
-	return instance
+
+	return _instance
 }

@@ -239,7 +239,6 @@ func Test_spec_values(t *testing.T) {
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("MakeGatewayInfo() mismatch (-want +got):\n%s", diff)
 			}
-
 		})
 	}
 }
