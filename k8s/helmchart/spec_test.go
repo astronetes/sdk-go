@@ -119,8 +119,9 @@ func Test_spec_values(t *testing.T) {
 		t.Fatal(err)
 	}
 	type fields struct {
-		valuesTemplatePath string
-		vars               map[string]interface{}
+		valuesTemplatePath    string
+		valuesTemplateContent string
+		vars                  map[string]interface{}
 	}
 	tests := []struct {
 		name    string
@@ -224,12 +225,41 @@ func Test_spec_values(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "text template with variables and provided vars",
+			fields: fields{
+
+				valuesTemplateContent: "" +
+					"primary:\n" +
+					"  replicasCount: {{.replicasCount}}\n" +
+					"docker:\n" +
+					"  image:\n" +
+					"    repository: nginx-operator\n" +
+					"    tag: {{or .docker.image.tag \"v0.0.1\"}}",
+				vars: map[string]interface{}{
+					"replicasCount": float64(3),
+				},
+			},
+			want: map[string]interface{}{
+				"primary": map[string]any{
+					"replicasCount": float64(3),
+				},
+				"docker": map[string]interface{}{
+					"image": map[string]any{
+						"repository": "nginx-operator",
+						"tag":        "v0.0.1",
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &spec{
-				valuesTemplatePath: tt.fields.valuesTemplatePath,
-				vars:               tt.fields.vars,
+				valuesTemplateContent: tt.fields.valuesTemplateContent,
+				valuesTemplatePath:    tt.fields.valuesTemplatePath,
+				vars:                  tt.fields.vars,
 			}
 			got, err := s.values()
 			if (err != nil) != tt.wantErr {

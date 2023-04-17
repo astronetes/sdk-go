@@ -28,16 +28,17 @@ type Spec interface {
 }
 
 type spec struct {
-	dist               chartDist
-	chartPath          string
-	valuesTemplatePath string
-	vars               map[string]interface{}
-	_chart             *chart.Chart
-	_values            map[string]interface{}
+	dist                  chartDist
+	chartPath             string
+	valuesTemplatePath    string
+	valuesTemplateContent string
+	vars                  map[string]interface{}
+	_chart                *chart.Chart
+	_values               map[string]interface{}
 }
 
 func (s *spec) hasValuesTemplate() bool {
-	return s.valuesTemplatePath != ""
+	return s.valuesTemplatePath != "" || s.valuesTemplateContent != ""
 }
 
 func (s *spec) chart() (*chart.Chart, error) {
@@ -68,11 +69,16 @@ func (s *spec) values() (map[string]interface{}, error) {
 	if !s.hasValuesTemplate() {
 		return s.vars, nil
 	}
-	content, err := readFile(s.valuesTemplatePath)
-	if err != nil {
-		return nil, fmt.Errorf("error reading content of values template: ''%w", err)
+	var content = s.valuesTemplateContent
+	if s.valuesTemplatePath != "" {
+		contentBytes, err := readFile(s.valuesTemplatePath)
+		if err != nil {
+			return nil, fmt.Errorf("error reading content of values template: ''%w", err)
+		}
+		content = string(contentBytes)
 	}
-	valuesContent, err := gotemplate.ApplyTemplateWithVariables(defaultValuesTemplateName, string(content), s.vars)
+
+	valuesContent, err := gotemplate.ApplyTemplateWithVariables(defaultValuesTemplateName, content, s.vars)
 	if err != nil {
 		return nil, err
 	}
@@ -100,17 +106,25 @@ func (s *spec) chartAndValues() (*chart.Chart, map[string]interface{}, error) {
 // It returns a pointer to a Spec.
 func LoadPackagedChart(chartPath string) Spec {
 	return &spec{
-		dist:               packaged,
-		chartPath:          chartPath,
-		valuesTemplatePath: "",
-		vars:               make(map[string]interface{}, 0),
-		_chart:             nil,
-		_values:            nil,
+		dist:                  packaged,
+		chartPath:             chartPath,
+		valuesTemplatePath:    "",
+		valuesTemplateContent: "",
+		vars:                  make(map[string]interface{}, 0),
+		_chart:                nil,
+		_values:               nil,
 	}
+}
+func (s *spec) WithValuesTextTemplate(text string) Spec {
+	s.valuesTemplateContent = text
+	s.valuesTemplatePath = ""
+
+	return s
 }
 
 func (s *spec) WithValuesFileTemplate(valuesTemplatePath string) Spec {
 	s.valuesTemplatePath = valuesTemplatePath
+	s.valuesTemplateContent = ""
 
 	return s
 }
