@@ -19,6 +19,7 @@ import (
 
 type Client interface {
 	Install(ctx context.Context, spec Spec, fn func(install *action.Install)) error
+	Uninstall(ctx context.Context, release string, installFunc func(install *action.Uninstall)) error
 }
 
 type client struct {
@@ -117,4 +118,12 @@ func (c *client) Install(ctx context.Context, spec Spec, installFunc func(instal
 	installFunc(action)
 
 	return internal.Install(ctx, action, chart, values)
+}
+
+func (c *client) Uninstall(ctx context.Context, release string, uninstallFunc func(install *action.Uninstall)) error {
+
+	action := action.NewUninstall(c.cfg)
+	uninstallFunc(action)
+
+	return internal.Uninstall(ctx, action, release)
 }
