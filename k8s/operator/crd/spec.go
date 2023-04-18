@@ -1,7 +1,6 @@
 package crd
 
 type Spec struct {
-
 	// ClassName to be assigned to the Controller
 	ClassName string `json:"classname,omitempty"`
 
