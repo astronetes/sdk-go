@@ -1,4 +1,13 @@
-package crd
+package api
+
+type Provider string
+
+const (
+	AWS   Provider = "aws"
+	Azure Provider = "azure"
+	K3s   Provider = "k3s"
+	Kind  Provider = "kinds"
+)
 
 type Spec struct {
 	// ClassName to be assigned to the Controller
@@ -9,5 +18,5 @@ type Spec struct {
 	Default bool `json:"default,omitempty"`
 
 	//+kubebuilder:validation:Optional
-	provider Provider `json:"provider,omitempty"`
+	Provider Provider `json:"Provider,omitempty"`
 }
