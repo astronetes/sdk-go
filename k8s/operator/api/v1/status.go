@@ -6,10 +6,11 @@ import (
 
 type Condition struct {
 	metav1.Condition `json:",inline"`
+	Tries            int `json:"tries,omitempty"`
 }
 
 func NewConditionFromMetaV1(c metav1.Condition) Condition {
-	return Condition{c}
+	return Condition{c, 0}
 }
 
 type Conditions []Condition
@@ -39,9 +40,17 @@ func (s *ReconcilableStatus) SetConditions(conditions ...Condition) {
 	s.Conditions = conditions
 }
 
+func (s *ReconcilableStatus) updatePreviousState(condition Condition) {
+	s.Conditions[0].Status = metav1.ConditionFalse
+	s.Conditions[0].LastTransitionTime = metav1.Now()
+	s.Conditions[0].Tries += 1
+}
+
 func (s *ReconcilableStatus) SetCondition(condition Condition) {
 	conditions := s.Conditions
 	conditions[0].Status = metav1.ConditionFalse
+	conditions[0].LastTransitionTime = metav1.Now()
+	// TODO move a to check
 	exceedAllowedConditions := false
 	startIndex := 0
 	endIndex := len(conditions)
@@ -66,4 +75,17 @@ func (in *ReconcilableStatus) DeepCopyInto(out *ReconcilableStatus) {
 
 func (r *ReconcilableStatus) ExceedErrors() bool {
 	return r.ErrorsCounter > 3
+}
+
+func NewCondition(condType string, reason string, message string) Condition {
+	return Condition{
+		Condition: metav1.Condition{
+			Type:               condType,
+			Reason:             reason,
+			Message:            message,
+			Status:             metav1.ConditionTrue,
+			LastTransitionTime: metav1.Now(),
+		},
+		Tries: 0,
+	}
 }
