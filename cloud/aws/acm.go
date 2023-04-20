@@ -12,9 +12,11 @@ import (
 )
 
 type ACMClient interface {
-	IsCertificateIsCreated(ctx context.Context, certificatedID string) (bool, error)
+	IsCertificateCreated(ctx context.Context, certificatedID string) (bool, error)
+	IsCertificateInIssuedState(ctx context.Context, certificatedID string) (bool, error)
 	RequestCertificate(ctx context.Context, domain string) (string, error)
 	DeleteCertificate(ctx context.Context, certificateID string) error
+	GetDomainValidationOptionsForCertificate(ctx context.Context, certificateID string) ([]acmTypes.DomainValidation, error)
 }
 
 type acmClient struct {
@@ -22,6 +24,20 @@ type acmClient struct {
 }
 
 func (c *acmClient) IsCertificateIsCreated(ctx context.Context, certificatedID string) (bool, error) {
+	logger := log.FromContext(ctx)
+	input := &acm.DescribeCertificateInput{
+		CertificateArn: aws.String(certificatedID),
+	}
+	output, err := c.client.DescribeCertificate(ctx, input)
+	if err != nil {
+		logger.V(log.Error).Info("unexpected error obtaining the details for the certificate: '%w'", err)
+		return false, err
+	}
+
+	return output != nil, nil
+}
+
+func (c *acmClient) IsCertificateInIssuedState(ctx context.Context, certificatedID string) (bool, error) {
 	logger := log.FromContext(ctx)
 	input := &acm.DescribeCertificateInput{
 		CertificateArn: aws.String(certificatedID),
@@ -59,4 +75,18 @@ func (c *acmClient) RequestCertificate(ctx context.Context, domain string) (stri
 		return "", err
 	}
 	return *response.CertificateArn, nil
+}
+
+func (c *acmClient) GetDomainValidationOptionsForCertificate(ctx context.Context, certificateID string) ([]acmTypes.DomainValidation, error) {
+	logger := log.FromContext(ctx)
+	input := &acm.DescribeCertificateInput{
+		CertificateArn: aws.String(certificateID),
+	}
+
+	response, err := c.client.DescribeCertificate(ctx, input)
+	if err != nil {
+		logger.V(log.Error).Info("Unable to get certificate details: '%w", err)
+	}
+
+	return response.Certificate.DomainValidationOptions, nil
 }
