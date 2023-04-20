@@ -1,4 +1,4 @@
-package api
+package v1
 
 type Provider string
 
@@ -17,6 +17,7 @@ type Spec struct {
 	//+kubebuilder:default:=false
 	Default bool `json:"default,omitempty"`
 
+	// TODO Shoul it be calculated after evaluating the below attributes
 	//+kubebuilder:validation:Optional
 	Provider Provider `json:"Provider,omitempty"`
 }
