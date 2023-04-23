@@ -67,6 +67,7 @@ func (s *ReconcilableStatus) GetCurrentCondition() Condition {
 	}
 	return Condition{}
 }
+
 func (s *ReconcilableStatus) GetCurrentPhase() string {
 	if len(s.Conditions) > 0 {
 		return s.Conditions[0].Type
