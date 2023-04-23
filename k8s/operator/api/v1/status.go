@@ -4,19 +4,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type PhaseCode string
+
 type Condition struct {
 	metav1.Condition `json:",inline"`
-	Tries            int `json:"tries,omitempty"`
-}
-
-func NewConditionFromMetaV1(c metav1.Condition) Condition {
-	return Condition{c, 0}
+	Tries            int    `json:"tries,omitempty"`
+	ErrorStackTrace  string `json:"errStackTrace,omitempty"`
 }
 
 type Conditions []Condition
 
 func (c Conditions) isPreviousStatus(conditionType string) bool {
-	return !(len(c) > 0 && conditionType == c[0].Type)
+	return len(c) > 0 && conditionType == c[0].Type
 }
 
 type ReconcilableStatus struct {
@@ -46,7 +45,7 @@ func (s *ReconcilableStatus) updatePreviousState(condition Condition) {
 	s.Conditions[0].Tries += 1
 }
 
-func (s *ReconcilableStatus) SetCondition(condition Condition) {
+func (s *ReconcilableStatus) AddCondition(condition Condition) {
 	conditions := s.Conditions
 	conditions[0].Status = metav1.ConditionFalse
 	conditions[0].LastTransitionTime = metav1.Now()
@@ -62,6 +61,12 @@ func (s *ReconcilableStatus) SetCondition(condition Condition) {
 	s.Conditions = append([]Condition{condition}, conditions[startIndex:endIndex]...)
 }
 
+func (s *ReconcilableStatus) GetCurrentCondition() Condition {
+	if len(s.Conditions) > 0 {
+		return s.Conditions[0]
+	}
+	return Condition{}
+}
 func (s *ReconcilableStatus) GetCurrentPhase() string {
 	if len(s.Conditions) > 0 {
 		return s.Conditions[0].Type
@@ -77,10 +82,10 @@ func (r *ReconcilableStatus) ExceedErrors() bool {
 	return r.ErrorsCounter > 3
 }
 
-func NewCondition(condType string, reason string, message string) Condition {
+func NewCondition(condType PhaseCode, reason string, message string) Condition {
 	return Condition{
 		Condition: metav1.Condition{
-			Type:               condType,
+			Type:               string(condType),
 			Reason:             reason,
 			Message:            message,
 			Status:             metav1.ConditionTrue,
