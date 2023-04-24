@@ -2,14 +2,17 @@ package aws
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
+	acm2 "github.com/astronetes/sdk-go/cloud/aws/acm"
 	"github.com/astronetes/sdk-go/log"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	acmTypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 )
+
+func RequestCertificate(ctx context.Context, client *acm.Client, domain string) acm2.RequestCertificateResponse {
+	return acm2.RequestCertificate(ctx, client, domain)
+}
 
 type ACMClient interface {
 	IsCertificateCreated(ctx context.Context, certificatedID string) (bool, error)
@@ -49,32 +52,6 @@ func (c *acmClient) IsCertificateInIssuedState(ctx context.Context, certificated
 	}
 
 	return output.Certificate.Status == acmTypes.CertificateStatusIssued, nil
-}
-
-func (c *acmClient) RequestCertificate(ctx context.Context, domain string) (string, error) {
-	logger := log.FromContext(ctx)
-	domainParts := strings.Split(domain, ".")
-	if len(domainParts) < 2 {
-		logger.V(log.Error).Info("invalid domain, It should have at least two blocks")
-		return "", fmt.Errorf("invalid domain, It should have at least two blocks")
-	}
-	validationDomain := strings.Join(domainParts[len(domainParts)-2:], ".")
-	request := &acm.RequestCertificateInput{
-		DomainName: aws.String(domain),
-		DomainValidationOptions: []acmTypes.DomainValidationOption{
-			{
-				DomainName:       aws.String(domain),
-				ValidationDomain: aws.String(validationDomain),
-			},
-		},
-		ValidationMethod: acmTypes.ValidationMethodDns,
-	}
-	response, err := c.client.RequestCertificate(ctx, request)
-	if err != nil {
-		logger.V(log.Error).Info("unexpected error requesting the certificate: '%w'", err)
-		return "", err
-	}
-	return *response.CertificateArn, nil
 }
 
 func (c *acmClient) GetDomainValidationOptionsForCertificate(ctx context.Context, certificateID string) ([]acmTypes.DomainValidation, error) {
