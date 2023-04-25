@@ -8,20 +8,28 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 )
 
-func DeleteCertificate(ctx context.Context, client *acm.Client, certificateARN string) DeleteCertificateResponse {
-	if certificateARN == "" {
+func DeleteCertificate(ctx context.Context, client *acm.Client, req DeleteCertificateRequest) DeleteCertificateResponse {
+	if req.certificateARN == "" {
 		return DeleteCertificateResponse{
 			error: fmt.Errorf("missing required certificate ARN"),
 		}
 	}
 	input := &acm.DeleteCertificateInput{
-		CertificateArn: aws.String(certificateARN),
+		CertificateArn: aws.String(req.certificateARN),
 	}
 	response, err := client.DeleteCertificate(ctx, input)
 	return DeleteCertificateResponse{
 		response: response,
 		error:    err,
 	}
+}
+
+type DeleteCertificateRequest struct {
+	certificateARN string
+}
+
+func NewDeleteCertificateRequest(certificateARN string) DeleteCertificateRequest {
+	return DeleteCertificateRequest{certificateARN: certificateARN}
 }
 
 type DeleteCertificateResponse struct {

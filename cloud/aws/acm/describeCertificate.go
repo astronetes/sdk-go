@@ -9,20 +9,28 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 )
 
-func DescribeCertificate(ctx context.Context, client *acm.Client, certificateARN string) DescribeCertificateResponse {
-	if certificateARN == "" {
+func DescribeCertificate(ctx context.Context, client *acm.Client, req DescribeCertificateRequest) DescribeCertificateResponse {
+	if req.certificateARN == "" {
 		return DescribeCertificateResponse{
 			error: fmt.Errorf("missing required certificate ARN"),
 		}
 	}
 	input := &acm.DescribeCertificateInput{
-		CertificateArn: aws.String(certificateARN),
+		CertificateArn: aws.String(req.certificateARN),
 	}
 	response, err := client.DescribeCertificate(ctx, input)
 	return DescribeCertificateResponse{
 		response: response,
 		error:    err,
 	}
+}
+
+type DescribeCertificateRequest struct {
+	certificateARN string
+}
+
+func NewDescribeCertificateRequest(certificateARN string) DescribeCertificateRequest {
+	return DescribeCertificateRequest{certificateARN: certificateARN}
 }
 
 type DescribeCertificateResponse struct {
