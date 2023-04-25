@@ -10,6 +10,7 @@ import (
 	acmTypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 )
 
+// TODO See issue https://github.com/astronetes/sdk-go/issues/6
 func RequestCertificate(ctx context.Context, client *acm.Client, req RequestCertificateRequest) RequestCertificateResponse {
 	domainParts := strings.Split(req.domain, ".")
 	if len(domainParts) < 2 {
