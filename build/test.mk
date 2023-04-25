@@ -25,4 +25,7 @@ test-coverage: ## run unit tests with coverage
 test-clean: ## remove coverage files
 	@rm -f $(COVERAGE_FILE) $(COVERAGE_REPORT)
 
-
+.PHONY: test-e2e
+test-e2e:
+	@echo "=== $(PROJECT_NAME) === [ test ]: running e2e tests..."
+	@ginkgo run -v ./tests/...
