@@ -53,8 +53,12 @@ type ChangeResourceRecordSetRequest struct {
 	zoneID string
 }
 
-func NewChangeResourceRecordSetRequest(action route53types.ChangeAction, name string, value string, ttl int64, zoneID string) ChangeResourceRecordSetRequest {
-	return ChangeResourceRecordSetRequest{action: action, name: name, value: value, ttl: ttl, zoneID: zoneID}
+func NewUpsertResourceRecordSetRequest(name string, value string, ttl int64, zoneID string) ChangeResourceRecordSetRequest {
+	return ChangeResourceRecordSetRequest{action: route53types.ChangeActionUpsert, name: name, value: value, ttl: ttl, zoneID: zoneID}
+}
+
+func NewDeleteResourceRecordSetRequest(name string, value string, ttl int64, zoneID string) ChangeResourceRecordSetRequest {
+	return ChangeResourceRecordSetRequest{action: route53types.ChangeActionDelete, name: name, value: value, ttl: ttl, zoneID: zoneID}
 }
 
 type ChangeResourceRecordSetResponse struct {
