@@ -7,26 +7,18 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 )
 
-func DeleteLogGroup(ctx context.Context, client *cloudwatchlogs.Client, req DeleteLogGroupRequest) DeleteLogGroupResponse {
+func DeleteLogGroup(ctx context.Context, client *cloudwatchlogs.Client, req DeleteLogGroupRequest) error {
 	request := &cloudwatchlogs.DeleteLogGroupInput{
 		LogGroupName: aws.String(req.Name),
 	}
-	response, err := client.DeleteLogGroup(ctx, request)
-	return DeleteLogGroupResponse{
-		response: response,
-		error:    err,
+	_, err := client.DeleteLogGroup(ctx, request)
+	if !IsNotFoundError(err) {
+		return err
 	}
+
+	return nil
 }
 
 type DeleteLogGroupRequest struct {
 	Name string
-}
-
-type DeleteLogGroupResponse struct {
-	response *cloudwatchlogs.DeleteLogGroupOutput
-	error
-}
-
-func (r DeleteLogGroupResponse) Error() error {
-	return r.error
 }
