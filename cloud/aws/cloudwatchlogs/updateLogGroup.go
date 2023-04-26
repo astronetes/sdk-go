@@ -7,16 +7,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 )
 
-func CreateLogGroup(ctx context.Context, client *cloudwatchlogs.Client, req CreateLogGroupRequest) error {
-	request := &cloudwatchlogs.CreateLogGroupInput{
-		LogGroupName: aws.String(req.Name),
-	}
-	if _, err := client.CreateLogGroup(ctx, request); err != nil {
-		return err
-	}
-
+func UpdateLogGroup(ctx context.Context, client *cloudwatchlogs.Client, req UpdateLogGroupRequest) error {
 	retentionRequest := &cloudwatchlogs.PutRetentionPolicyInput{
-		LogGroupName:    request.LogGroupName,
+		LogGroupName:    aws.String(req.Name),
 		RetentionInDays: aws.Int32(req.RetentionDays),
 	}
 	if _, err := client.PutRetentionPolicy(ctx, retentionRequest); err != nil {
@@ -26,7 +19,7 @@ func CreateLogGroup(ctx context.Context, client *cloudwatchlogs.Client, req Crea
 	return nil
 }
 
-type CreateLogGroupRequest struct {
+type UpdateLogGroupRequest struct {
 	Name          string
 	RetentionDays int32
 }
