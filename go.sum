@@ -108,6 +108,8 @@ github.com/aws/aws-sdk-go-v2/service/acm v1.17.9 h1:jQy0Jy/9QAzZIbMt2xU2ubOzdNaX
 github.com/aws/aws-sdk-go-v2/service/acm v1.17.9/go.mod h1:AVyl7c53y3QZRZPth0qxqKehWB6E2Dc4ICVbAYaCfS0=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.20.10 h1:3OAeRqUboCVhc3cozVzckL501B6V6mu4qyo08s3jsms=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.20.10/go.mod h1:5k59EsYR4orIPOQrGAKtQjIsM4Yw9qfxMeSs6+/UVN0=
+github.com/aws/aws-sdk-go-v2/service/iam v1.19.11 h1:IW71gY2YPZqsMAjjtgIAOwykXqcQnqouGX08wKPZVt0=
+github.com/aws/aws-sdk-go-v2/service/iam v1.19.11/go.mod h1:kAnokExGCYs7zfvZEZdFHvQ/x4ZKIci0Raps6mZI1Ag=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.26 h1:uUt4XctZLhl9wBE1L8lobU3bVN8SNUP7T+olb0bWBO4=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.26/go.mod h1:Bd4C/4PkVGubtNe5iMXu5BNnaBi/9t/UsFspPt4ram8=
 github.com/aws/aws-sdk-go-v2/service/route53 v1.27.7 h1:f/EOUu/Qw1IAMP6GJDzV50/hICt9/JOdhYAjego/8nk=
