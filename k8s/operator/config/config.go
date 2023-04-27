@@ -34,7 +34,7 @@ type ReconciliationPhase struct {
 }
 
 type Monitoring struct {
-	Address  string `json:"adress,omitempty"`
+	Address  string `json:"address,omitempty"`
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
 }
