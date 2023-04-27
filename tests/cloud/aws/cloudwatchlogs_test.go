@@ -96,7 +96,6 @@ var _ = Describe("Cloudwatchlogs", func() {
 				err := cloudwatchlogs.DeleteLogGroup(ctx, client, request)
 				Expect(err).To(BeNil())
 			})
-
 		})
 	})
 })

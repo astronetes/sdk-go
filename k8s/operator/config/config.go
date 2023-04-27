@@ -7,15 +7,15 @@ import (
 )
 
 type Config struct {
-	Controllers map[string]Controller `json:"controllers,omitempty"`
-	Monitoring  Monitoring            `json:"monitoring,omitempty"`
+	Controllers map[string]Controller `yaml:"controllers,omitempty"`
+	Monitoring  Monitoring            `yaml:"monitoring,omitempty"`
 }
 
 type Controller struct {
-	Timeout             time.Duration         `json:"timeout,omitempty"`
-	MaxConditions       int32                 `json:"max_conditions,omitempty"`
-	DefaultRequeueAfter *time.Duration        `json:"defaultRequeueAfter,omitempty"`
-	Phases              []ReconciliationPhase `json:"phases,omitempty"`
+	Timeout             time.Duration         `yaml:"timeout,omitempty"`
+	MaxConditions       int32                 `yaml:"max_conditions,omitempty"`
+	DefaultRequeueAfter *time.Duration        `yaml:"defaultRequeueAfter,omitempty"`
+	Phases              []ReconciliationPhase `yaml:"phases,omitempty"`
 }
 
 func (ctrl Controller) getConfigForReconciliationPhase(code v1.PhaseCode) ReconciliationPhase {
@@ -28,22 +28,22 @@ func (ctrl Controller) getConfigForReconciliationPhase(code v1.PhaseCode) Reconc
 }
 
 type ReconciliationPhase struct {
-	Name         v1.PhaseCode    `json:"name,omitempty"`
-	Backoff      []time.Duration `json:"backoff,omitempty"`
-	RequeueAfter *time.Duration  `json:"requeueAfter,omitempty"`
+	Name         v1.PhaseCode    `yaml:"name,omitempty"`
+	Backoff      []time.Duration `yaml:"backoff,omitempty"`
+	RequeueAfter *time.Duration  `yaml:"requeueAfter,omitempty"`
 }
 
 type Monitoring struct {
-	Address  string `json:"address,omitempty"`
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	Address  string `yaml:"address,omitempty"`
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
 }
 
 type PhaseSettings struct {
-	Timeout       time.Duration   `json:"timeout,omitempty"`
-	MaxConditions int32           `json:"max_conditions,omitempty"`
-	Backoff       []time.Duration `json:"backoff,omitempty"`
-	RequeueAfter  *time.Duration  `json:"requeueAfter,omitempty"`
+	Timeout       time.Duration   `yaml:"timeout,omitempty"`
+	MaxConditions int32           `yaml:"max_conditions,omitempty"`
+	Backoff       []time.Duration `yaml:"backoff,omitempty"`
+	RequeueAfter  *time.Duration  `yaml:"requeueAfter,omitempty"`
 }
 
 func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) PhaseSettings {
