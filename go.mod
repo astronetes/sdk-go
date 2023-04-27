@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.20
 	github.com/aws/aws-sdk-go-v2/service/acm v1.17.9
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.20.10
+	github.com/aws/aws-sdk-go-v2/service/iam v1.19.11
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.27.7
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
