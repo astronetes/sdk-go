@@ -1,4 +1,4 @@
-package aws_test
+package loggroup_test
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	awscloudwatchlogs "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 )
 
-var _ = Describe("Cloudwatchlogs", func() {
+var _ = Describe("AWS - Cloudwatchlogs - LogGroup", func() {
 	Describe("Working with LogGroup", func() {
 		Context("with default AWS config", func() {
 			config, err := config.LoadDefaultConfig(context.TODO())

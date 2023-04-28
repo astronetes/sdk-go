@@ -1,4 +1,4 @@
-package aws_test
+package loggroup_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestAws(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Aws Suite")
+	RunSpecs(t, "AWS - Cloudwatchlogs - LogGroup Suite")
 }
