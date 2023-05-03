@@ -76,7 +76,6 @@ var _ = Describe("AWS - IAM - Role", func() {
 				err := iam.DeleteRole(ctx, client, roleName)
 				Expect(err).To(BeNil())
 			})
-
 		})
 	})
 })

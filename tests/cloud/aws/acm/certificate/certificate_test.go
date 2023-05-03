@@ -60,7 +60,6 @@ var _ = Describe("AWS - ACM - Certificate", func() {
 				err := acm.DeleteCertificate(ctx, client, certificateArn)
 				Expect(err).To(BeNil())
 			})
-
 		})
 	})
 })

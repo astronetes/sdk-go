@@ -89,7 +89,6 @@ func DetachAllPoliciesFromRole(ctx context.Context, client *iam.Client, roleName
 		})
 		if err != nil {
 			return err
-
 		}
 	}
 

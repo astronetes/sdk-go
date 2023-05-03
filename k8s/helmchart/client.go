@@ -20,6 +20,7 @@ import (
 type Client interface {
 	Install(ctx context.Context, spec Spec, fn func(install *action.Install)) error
 	Uninstall(ctx context.Context, release string, installFunc func(install *action.Uninstall)) error
+	IsInstalled(ctx context.Context, release string, installFunc func(install *action.Status)) (bool, error)
 }
 
 type client struct {

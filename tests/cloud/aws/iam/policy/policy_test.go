@@ -73,7 +73,6 @@ var _ = Describe("AWS - IAM - Policy", func() {
 				err := iam.DeletePolicy(ctx, client, policyArn)
 				Expect(err).To(BeNil())
 			})
-
 		})
 	})
 })
