@@ -6,12 +6,19 @@ import (
 
 type PhaseCode string
 
-type OperationID string
+type (
+	OperationID     string
+	OperationStatus string
+)
 
 const (
-	Creation OperationID = "create"
-	Updation OperationID = "update"
-	Deletion OperationID = "delete"
+	Creation   OperationID     = "create"
+	Updation   OperationID     = "update"
+	Deletion   OperationID     = "delete"
+	OnCreation OperationStatus = "onCreation"
+	Ready      OperationStatus = "ready"
+	OnDeletion OperationStatus = "onDeletion"
+	Deleted    OperationStatus = "deleted"
 )
 
 type Operation struct {

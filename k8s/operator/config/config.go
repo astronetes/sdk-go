@@ -39,15 +39,15 @@ type Monitoring struct {
 	Password string `yaml:"password,omitempty"`
 }
 
-type PhaseSettings struct {
+type Phase struct {
 	Timeout       time.Duration   `yaml:"timeout,omitempty"`
 	MaxConditions int32           `yaml:"max_conditions,omitempty"`
 	Backoff       []time.Duration `yaml:"backoff,omitempty"`
 	RequeueAfter  *time.Duration  `yaml:"requeueAfter,omitempty"`
 }
 
-func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) PhaseSettings {
-	out := PhaseSettings{
+func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase {
+	out := Phase{
 		Timeout:       ctrl.Timeout,
 		MaxConditions: ctrl.MaxConditions,
 		RequeueAfter:  ctrl.DefaultRequeueAfter,
