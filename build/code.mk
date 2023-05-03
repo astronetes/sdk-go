@@ -12,7 +12,8 @@ git-hooks: ## setup githooks for the local repository
 fmt: ## format the code
 	@echo "=== $(PROJECT_NAME) === [ fmt ]: formatting the code with goimport..."
 	@#$($(GOFUMPT)  $(find . -type f -name '*.go' -not -path "./vendor/*")
-	@goimports -w . && gofumpt -w .
+	# @goimports -w  && gofumpt -w .
+	@gofumpt -w .
 
 .PHONY: lint
 lint:

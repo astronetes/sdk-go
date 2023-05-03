@@ -6,10 +6,23 @@ import (
 
 type PhaseCode string
 
+type OperationID string
+
+const (
+	Creation OperationID = "create"
+	Updation OperationID = "update"
+	Deletion OperationID = "delete"
+)
+
+type Operation struct {
+	Op         OperationID `json:"op,omitempty"`
+	ResourceID string      `json:"resourceID,omitempty"`
+}
+
 type Condition struct {
 	metav1.Condition `json:",inline"`
-	Tries            int    `json:"tries,omitempty"`
-	ErrorStackTrace  string `json:"errStackTrace,omitempty"`
+	Tries            int         `json:"tries,omitempty"`
+	Operations       []Operation `json:"operations,omitempty"`
 }
 
 type Conditions []Condition
