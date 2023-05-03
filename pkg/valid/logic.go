@@ -3,7 +3,7 @@ package valid
 import "fmt"
 
 func OnlyOneOfThemIsInitialized(items ...interface{}) (int, error) {
-	var notNilIndex = -1
+	notNilIndex := -1
 	for i, item := range items {
 		if item != nil {
 			if notNilIndex > -1 {
