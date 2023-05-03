@@ -11,6 +11,7 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/registry"
+	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -21,6 +22,7 @@ type Client interface {
 	Install(ctx context.Context, spec Spec, fn func(install *action.Install)) error
 	Uninstall(ctx context.Context, release string, installFunc func(install *action.Uninstall)) error
 	IsInstalled(ctx context.Context, release string, installFunc func(install *action.Status)) (bool, error)
+	GetStatus(ctx context.Context, release string, installFunc func(install *action.Status)) (release.Status, error)
 }
 
 type client struct {
@@ -133,4 +135,11 @@ func (c *client) IsInstalled(ctx context.Context, release string, statusFunc fun
 	statusFunc(action)
 
 	return internal.IsCompleted(ctx, action, release)
+}
+
+func (c *client) GetStatus(ctx context.Context, release string, statusFunc func(install *action.Status)) (release.Status, error) {
+	action := action.NewStatus(c.cfg)
+	statusFunc(action)
+
+	return internal.GetStatus(ctx, action, release)
 }
