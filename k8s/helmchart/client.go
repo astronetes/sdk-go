@@ -126,3 +126,10 @@ func (c *client) Uninstall(ctx context.Context, release string, uninstallFunc fu
 
 	return internal.Uninstall(ctx, action, release)
 }
+
+func (c *client) IsInstalled(ctx context.Context, release string, statusFunc func(a *action.Status)) (bool, error) {
+	action := action.NewStatus(c.cfg)
+	statusFunc(action)
+
+	return internal.IsCompleted(ctx, action, release)
+}
