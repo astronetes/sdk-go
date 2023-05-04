@@ -33,6 +33,9 @@ type Manager[T any, C any] struct {
 }
 
 func (m Manager[T, C]) WithProvider(providerID ID, provider Provider[T, C]) Manager[T, C] {
+	if m.providers == nil {
+		m.providers = make(map[ID]Provider[T, C])
+	}
 	m.providers[providerID] = provider
 	return m
 }

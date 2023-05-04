@@ -2,8 +2,9 @@ package controller
 
 import (
 	"context"
-	"github.com/astronetes/sdk-go/k8s/operator/config"
 	"time"
+
+	"github.com/astronetes/sdk-go/k8s/operator/config"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
