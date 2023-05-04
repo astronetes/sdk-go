@@ -37,7 +37,7 @@ func (m Manager[T, C]) WithProvider(providerID ID, provider Provider[T, C]) Mana
 	return m
 }
 
-func (m Manager[T, C]) Get(providerID ID, ctx context.Context, cfg C) (Provider[T, C], error) {
+func (m Manager[T, C]) Get(ctx context.Context, cfg C, providerID ID) (Provider[T, C], error) {
 	provider, ok := m.providers[providerID]
 	if !ok {
 		return nil, fmt.Errorf("unsupported provider id '%v' for handling this resource", providerID)
