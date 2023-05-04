@@ -2,67 +2,68 @@ package controller
 
 import (
 	"context"
+	"github.com/astronetes/sdk-go/k8s/operator/config"
 	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 const (
-	okCode PhaseResultCode = iota
+	okCode Code = iota
 	doneCode
 	failCode
 )
 
-var ReconciliationOk = func(msg string) PhaseResult {
-	return PhaseResult{
+var OK = func(msg string) Result {
+	return Result{
 		code: okCode,
 		msg:  msg,
 	}
 }
 
-var ReconciliationError = func(err error) PhaseResult {
-	return PhaseResult{
+var Error = func(err error) Result {
+	return Result{
 		code: failCode,
 		err:  err,
 	}
 }
 
-var ReconciliationCompleted = func(msg string) PhaseResult {
-	return PhaseResult{
+var Completed = func(msg string) Result {
+	return Result{
 		code: doneCode,
 		msg:  msg,
 	}
 }
 
-type PhaseReconcile[O any] func(ctx context.Context, obj O) PhaseResult
+type PhaseReconcile[O any] func(ctx context.Context, cfg config.Phase, obj O) Result
 
-type PhaseResult struct {
-	code  PhaseResultCode
+type Result struct {
+	code  Code
 	msg   string
 	err   error
 	after time.Duration
 }
 
-type PhaseResultCode int32
+type Code int32
 
-func (r PhaseResult) HasError() bool {
+func (r Result) HasError() bool {
 	return r.err != nil
 }
 
-func (r PhaseResult) Message() string {
+func (r Result) Message() string {
 	return r.msg
 }
 
-func (r PhaseResult) Code() PhaseResultCode {
+func (r Result) Code() Code {
 	return r.code
 }
 
-func (r PhaseResult) After(t time.Duration) PhaseResult {
+func (r Result) After(t time.Duration) Result {
 	r.after = t
 	return r
 }
 
-func (r *PhaseResult) RuntimeResult() (ctrl.Result, error) {
+func (r Result) RuntimeResult() (ctrl.Result, error) {
 	switch r.code {
 	case okCode:
 		return ctrl.Result{
