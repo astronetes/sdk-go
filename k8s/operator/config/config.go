@@ -12,10 +12,10 @@ type Config struct {
 }
 
 type Controller struct {
-	Timeout             time.Duration         `yaml:"timeout,omitempty"`
-	MaxConditions       int32                 `yaml:"max_conditions,omitempty"`
-	DefaultRequeueAfter *time.Duration        `yaml:"defaultRequeueAfter,omitempty"`
-	Phases              []ReconciliationPhase `yaml:"phases,omitempty"`
+	Timeout       *time.Duration        `yaml:"timeout,omitempty"`
+	MaxConditions int32                 `yaml:"maxConditions,omitempty"`
+	RequeueAfter  *time.Duration        `yaml:"requeueAfter,omitempty"`
+	Phases        []ReconciliationPhase `yaml:"phases,omitempty"`
 }
 
 func (ctrl Controller) getConfigForReconciliationPhase(code v1.PhaseCode) ReconciliationPhase {
@@ -29,8 +29,10 @@ func (ctrl Controller) getConfigForReconciliationPhase(code v1.PhaseCode) Reconc
 
 type ReconciliationPhase struct {
 	Name         v1.PhaseCode    `yaml:"name,omitempty"`
+	Timeout      *time.Duration  `yaml:"timeout,omitempty"`
 	Backoff      []time.Duration `yaml:"backoff,omitempty"`
 	RequeueAfter *time.Duration  `yaml:"requeueAfter,omitempty"`
+	Meta         map[string]any  `yaml:"meta,omitempty"`
 }
 
 type Monitoring struct {
@@ -40,17 +42,20 @@ type Monitoring struct {
 }
 
 type Phase struct {
-	Timeout       time.Duration   `yaml:"timeout,omitempty"`
-	MaxConditions int32           `yaml:"max_conditions,omitempty"`
+	Timeout       *time.Duration  `yaml:"timeout,omitempty"`
+	MaxConditions int32           `yaml:"maxConditions,omitempty"`
 	Backoff       []time.Duration `yaml:"backoff,omitempty"`
 	RequeueAfter  *time.Duration  `yaml:"requeueAfter,omitempty"`
+	Meta          map[string]any  `yaml:"meta,omitempty"`
 }
 
 func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase {
 	out := Phase{
 		Timeout:       ctrl.Timeout,
 		MaxConditions: ctrl.MaxConditions,
-		RequeueAfter:  ctrl.DefaultRequeueAfter,
+		Backoff:       []time.Duration{},
+		RequeueAfter:  ctrl.RequeueAfter,
+		Meta:          map[string]any{},
 	}
 	phase := ctrl.getConfigForReconciliationPhase(code)
 	if phase.Backoff != nil {
@@ -58,6 +63,12 @@ func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase 
 	}
 	if phase.RequeueAfter != nil {
 		out.RequeueAfter = phase.RequeueAfter
+	}
+	if phase.Meta != nil {
+		out.Meta = phase.Meta
+	}
+	if phase.Timeout != nil {
+		out.Timeout = phase.Timeout
 	}
 	return out
 }
