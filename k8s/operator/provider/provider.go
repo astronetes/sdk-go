@@ -5,8 +5,10 @@ import (
 	"fmt"
 )
 
-type ID string
-type Status int32
+type (
+	ID     string
+	Status int32
+)
 
 const (
 	Uncreated = iota
