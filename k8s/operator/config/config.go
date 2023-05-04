@@ -32,6 +32,7 @@ type ReconciliationPhase struct {
 	Timeout      *time.Duration  `yaml:"timeout,omitempty"`
 	Backoff      []time.Duration `yaml:"backoff,omitempty"`
 	RequeueAfter *time.Duration  `yaml:"requeueAfter,omitempty"`
+	MaxTries     float64         `yaml:"maxTries,omitempty"`
 	Meta         map[string]any  `yaml:"meta,omitempty"`
 }
 
@@ -46,6 +47,7 @@ type Phase struct {
 	MaxConditions int32           `yaml:"maxConditions,omitempty"`
 	Backoff       []time.Duration `yaml:"backoff,omitempty"`
 	RequeueAfter  *time.Duration  `yaml:"requeueAfter,omitempty"`
+	MaxTries      float64         `yaml:"maxTries,omitempty"`
 	Meta          map[string]any  `yaml:"meta,omitempty"`
 }
 
@@ -56,6 +58,7 @@ func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase 
 		Backoff:       []time.Duration{},
 		RequeueAfter:  ctrl.RequeueAfter,
 		Meta:          map[string]any{},
+		MaxTries:      1,
 	}
 	phase := ctrl.getConfigForReconciliationPhase(code)
 	if phase.Backoff != nil {
@@ -69,6 +72,10 @@ func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase 
 	}
 	if phase.Timeout != nil {
 		out.Timeout = phase.Timeout
+	}
+	// -1 means infinite tries
+	if phase.MaxTries != 0 {
+		out.MaxTries = phase.MaxTries
 	}
 	return out
 }
