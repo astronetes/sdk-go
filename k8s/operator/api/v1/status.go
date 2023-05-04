@@ -75,6 +75,7 @@ func (s *ReconcilableStatus) AddCondition(condition Condition) {
 	endIndex := len(conditions)
 	if conditions.isPreviousStatus(condition.Type) {
 		startIndex = 1
+		condition.Tries = conditions[0].Tries + 1
 	} else if exceedAllowedConditions {
 		endIndex -= 1
 	}
