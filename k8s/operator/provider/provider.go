@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type (
@@ -20,7 +21,7 @@ const (
 )
 
 type Provider[T any, C any] interface {
-	SetUp(ctx context.Context, cfg C) error
+	SetUp(ctx context.Context, runtimeClient client.Client, cfg C) error
 	Status(ctx context.Context, obj T) Status
 	Create(ctx context.Context, obj T) error
 	Delete(ctx context.Context, obj T) error
