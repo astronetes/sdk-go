@@ -42,7 +42,7 @@ type Result struct {
 	code  Code
 	msg   string
 	err   error
-	after time.Duration
+	after *time.Duration
 }
 
 type Code int32
@@ -65,17 +65,19 @@ func (r Result) After(t time.Duration) Result {
 }
 
 func (r Result) RuntimeResult() (ctrl.Result, error) {
-	switch r.code {
-	case okCode:
-		return ctrl.Result{
-			Requeue:      true,
-			RequeueAfter: r.after,
-		}, r.err
-	case failCode:
-		return ctrl.Result{}, r.err
-	case doneCode:
+	if r.code == doneCode {
 		return ctrl.Result{}, nil
-	default:
+	}
+	shouldRequeue := r.Code() == okCode || r.after != nil
+	if !shouldRequeue {
 		return ctrl.Result{}, r.err
 	}
+	requeueAfter := 1 * time.Second
+	if r.after != nil {
+		requeueAfter = *r.after
+	}
+	return ctrl.Result{
+		Requeue:      true,
+		RequeueAfter: requeueAfter,
+	}, r.err
 }
