@@ -59,7 +59,7 @@ func (r Result) Code() Code {
 	return r.code
 }
 
-func (r Result) After(t time.Duration) Result {
+func (r Result) After(t *time.Duration) Result {
 	r.after = t
 	return r
 }
