@@ -28,12 +28,12 @@ func (ctrl Controller) getConfigForReconciliationPhase(code v1.PhaseCode) Reconc
 }
 
 type ReconciliationPhase struct {
-	Name         v1.PhaseCode    `yaml:"name,omitempty"`
-	Timeout      *time.Duration  `yaml:"timeout,omitempty"`
-	Backoff      []time.Duration `yaml:"backoff,omitempty"`
-	RequeueAfter *time.Duration  `yaml:"requeueAfter,omitempty"`
-	MaxTries     float64         `yaml:"maxTries,omitempty"`
-	Meta         map[string]any  `yaml:"meta,omitempty"`
+	Name            v1.PhaseCode    `yaml:"name,omitempty"`
+	Timeout         *time.Duration  `yaml:"timeout,omitempty"`
+	Backoff         []time.Duration `yaml:"backoff,omitempty"`
+	RequeueAfter    *time.Duration  `yaml:"requeueAfter,omitempty"`
+	AllowedAttempts int32           `yaml:"allowedAttempts,omitempty"`
+	Meta            map[string]any  `yaml:"meta,omitempty"`
 }
 
 type Monitoring struct {
@@ -43,22 +43,22 @@ type Monitoring struct {
 }
 
 type Phase struct {
-	Timeout       *time.Duration  `yaml:"timeout,omitempty"`
-	MaxConditions int32           `yaml:"maxConditions,omitempty"`
-	Backoff       []time.Duration `yaml:"backoff,omitempty"`
-	RequeueAfter  *time.Duration  `yaml:"requeueAfter,omitempty"`
-	MaxTries      float64         `yaml:"maxTries,omitempty"`
-	Meta          map[string]any  `yaml:"meta,omitempty"`
+	Timeout         *time.Duration  `yaml:"timeout,omitempty"`
+	MaxConditions   int32           `yaml:"maxConditions,omitempty"`
+	Backoff         []time.Duration `yaml:"backoff,omitempty"`
+	RequeueAfter    *time.Duration  `yaml:"requeueAfter,omitempty"`
+	AllowedAttempts int32           `yaml:"allowedAttempts,omitempty"`
+	Meta            map[string]any  `yaml:"meta,omitempty"`
 }
 
 func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase {
 	out := Phase{
-		Timeout:       ctrl.Timeout,
-		MaxConditions: ctrl.MaxConditions,
-		Backoff:       []time.Duration{},
-		RequeueAfter:  ctrl.RequeueAfter,
-		Meta:          map[string]any{},
-		MaxTries:      1,
+		Timeout:         ctrl.Timeout,
+		MaxConditions:   ctrl.MaxConditions,
+		Backoff:         []time.Duration{},
+		RequeueAfter:    ctrl.RequeueAfter,
+		Meta:            map[string]any{},
+		AllowedAttempts: 1,
 	}
 	phase := ctrl.getConfigForReconciliationPhase(code)
 	if phase.Backoff != nil {
@@ -74,8 +74,8 @@ func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase 
 		out.Timeout = phase.Timeout
 	}
 	// -1 means infinite tries
-	if phase.MaxTries != 0 {
-		out.MaxTries = phase.MaxTries
+	if phase.AllowedAttempts != 0 {
+		out.AllowedAttempts = phase.AllowedAttempts
 	}
 	return out
 }
