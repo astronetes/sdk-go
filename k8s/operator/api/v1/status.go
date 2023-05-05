@@ -8,7 +8,7 @@ type PhaseCode string
 
 type Condition struct {
 	metav1.Condition `json:",inline"`
-	Attempts         int `json:"attempts,omitempty"`
+	Attempts         int32 `json:"attempts,omitempty"`
 }
 
 type Conditions []Condition
@@ -21,8 +21,8 @@ type ReconcilableStatus struct {
 	Ready           bool       `json:"Ready"`
 	ErrorStackTrace string     `json:"errorStackTrace,omitempty"`
 	Conditions      Conditions `json:"Conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=Conditions"`
-	//ErrorsCounter int        `json:"ErrorsCounter,omitempty"`
-	//SpecHash      string     `json:"SpecHash,omitempty"`
+	// ErrorsCounter int        `json:"ErrorsCounter,omitempty"`
+	// SpecHash      string     `json:"SpecHash,omitempty"`
 }
 
 /*
