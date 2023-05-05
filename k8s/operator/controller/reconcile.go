@@ -52,6 +52,9 @@ func (r Result) HasError() bool {
 }
 
 func (r Result) Message() string {
+	if r.err != nil {
+		return r.err.Error()
+	}
 	return r.msg
 }
 
