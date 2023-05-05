@@ -30,15 +30,15 @@ func IsCompleted(_ context.Context, action *action.Status,
 	return false, fmt.Errorf("unexpected status '%v'", res.Info.Status)
 }
 
-func GetStatus(_ context.Context, action *action.Status, name string) (release.Status, error) {
+func GetReleaseInfo(_ context.Context, action *action.Status, name string) (*release.Info, error) {
 	res, err := action.Run(name)
 	if err != nil {
-		return release.StatusUnknown, fmt.Errorf("error installing helm chart: '%w", err)
+		return nil, fmt.Errorf("error installing helm chart: '%w", err)
 	}
 
 	log.Log.V(1).Info("installation completed successfully",
 		"release", res.Name, "status", res.Info.Status,
 	)
 
-	return res.Info.Status, nil
+	return res.Info, nil
 }
