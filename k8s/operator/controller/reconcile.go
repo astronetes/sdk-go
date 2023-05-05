@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/astronetes/sdk-go/k8s/operator/config"
@@ -36,7 +37,7 @@ var Completed = func(msg string) Result {
 	}
 }
 
-type PhaseReconcile[O any] func(ctx context.Context, cfg config.Phase, obj O) Result
+type PhaseReconcile[O any] func(ctx context.Context, client client.Client, cfg config.Phase, obj O) Result
 
 type Result struct {
 	code  Code
