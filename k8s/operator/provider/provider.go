@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -41,12 +42,12 @@ func (m Manager[T, C]) WithProvider(providerID ID, provider Provider[T, C]) Mana
 	return m
 }
 
-func (m Manager[T, C]) Get(ctx context.Context, cfg C, providerID ID) (Provider[T, C], error) {
+func (m Manager[T, C]) Get(ctx context.Context, runtimeClient client.Client, cfg C, providerID ID) (Provider[T, C], error) {
 	provider, ok := m.providers[providerID]
 	if !ok {
 		return nil, fmt.Errorf("unsupported provider id '%v' for handling this resource", providerID)
 	}
-	if err := provider.SetUp(ctx, cfg); err != nil {
+	if err := provider.SetUp(ctx, runtimeClient, cfg); err != nil {
 		return nil, err
 	}
 	return provider, nil
