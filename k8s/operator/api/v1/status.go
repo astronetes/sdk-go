@@ -44,6 +44,7 @@ func (s *ReconcilableStatus) updatePreviousState(condition Condition) {
 	s.Conditions[0].LastTransitionTime = metav1.Now()
 	s.Conditions[0].Message = condition.Message
 	s.Conditions[0].Attempts += 1
+
 }
 
 func (s *ReconcilableStatus) AddCondition(condition Condition) {
@@ -65,6 +66,7 @@ func (s *ReconcilableStatus) AddCondition(condition Condition) {
 		endIndex -= 1
 	}
 	s.Conditions = append([]Condition{condition}, conditions[1:endIndex]...)
+	s.Conditions[0].Status = metav1.ConditionTrue
 }
 
 func (s *ReconcilableStatus) GetCurrentCondition() Condition {
