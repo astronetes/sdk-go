@@ -21,25 +21,8 @@ type ReconcilableStatus struct {
 	Ready           bool       `json:"Ready"`
 	ErrorStackTrace string     `json:"errorStackTrace,omitempty"`
 	Conditions      Conditions `json:"Conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=Conditions"`
-	// ErrorsCounter int        `json:"ErrorsCounter,omitempty"`
-	// SpecHash      string     `json:"SpecHash,omitempty"`
 }
 
-/*
-*
-
-	func (s *ReconcilableStatus) ResetFailedCounter() {
-		s.ErrorsCounter = 0
-	}
-
-	func (s *ReconcilableStatus) IncreaseEerrorCounter() {
-		s.ErrorsCounter += 1
-	}
-
-	func (s *ReconcilableStatus) (conditions ...Condition) {
-		s.Conditions = conditions
-	}
-*/
 func (s *ReconcilableStatus) updatePreviousState(condition Condition) {
 	s.Conditions[0].LastTransitionTime = metav1.Now()
 	s.Conditions[0].Message = condition.Message
@@ -55,7 +38,7 @@ func (s *ReconcilableStatus) AddCondition(condition Condition) {
 	conditions[0].Status = metav1.ConditionFalse
 	conditions[0].LastTransitionTime = metav1.Now()
 	// TODO move a to check
-	exceedAllowedConditions := false
+	exceedAllowedConditions := len(conditions) > 10
 	if conditions.isPreviousStatus(condition.Type) {
 		s.updatePreviousState(condition)
 		return
@@ -64,7 +47,7 @@ func (s *ReconcilableStatus) AddCondition(condition Condition) {
 	if exceedAllowedConditions {
 		endIndex -= 1
 	}
-	s.Conditions = append([]Condition{condition}, conditions[1:endIndex]...)
+	s.Conditions = append([]Condition{condition}, conditions[0:endIndex]...)
 	s.Conditions[0].Status = metav1.ConditionTrue
 }
 
@@ -85,13 +68,6 @@ func (s *ReconcilableStatus) GetCurrentPhase() string {
 func (in *ReconcilableStatus) DeepCopyInto(out *ReconcilableStatus) {
 	*out = *in
 }
-
-/**
-func (r *ReconcilableStatus) ExceedErrors() bool {
-	return r.ErrorsCounter > 3
-}
-
-*/
 
 func NewCondition(condType PhaseCode, reason string, message string) Condition {
 	return Condition{
