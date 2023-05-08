@@ -84,5 +84,5 @@ func (r Result) RuntimeResult() (ctrl.Result, error) {
 	return ctrl.Result{
 		Requeue:      true,
 		RequeueAfter: requeueAfter,
-	}, r.err
+	}, nil
 }
