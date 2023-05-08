@@ -70,19 +70,15 @@ func (r Result) After(t *time.Duration) Result {
 }
 
 func (r Result) RuntimeResult() (ctrl.Result, error) {
-	if r.code == doneCode {
-		return ctrl.Result{}, nil
-	}
-	shouldRequeue := r.Code() == okCode || r.after != nil
+	shouldRequeue := r.code != doneCode && (r.Code() == okCode || r.after != nil)
 	if !shouldRequeue {
 		return ctrl.Result{}, r.err
 	}
-	requeueAfter := 1 * time.Second
+	var requeueAfter time.Duration
 	if r.after != nil {
 		requeueAfter = *r.after
 	}
 	return ctrl.Result{
-		Requeue:      true,
 		RequeueAfter: requeueAfter,
 	}, nil
 }
