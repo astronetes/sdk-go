@@ -8,7 +8,7 @@ type PhaseCode string
 
 type Condition struct {
 	metav1.Condition `json:",inline"`
-	Attempts         int32 `json:"attempts,omitempty"`
+	//Attempts         int32 `json:"attempts,omitempty"`
 }
 
 type Conditions []Condition
@@ -20,15 +20,21 @@ func (c Conditions) isPreviousStatus(conditionType string) bool {
 type ReconcilableStatus struct {
 	Ready      bool       `json:"Ready"`
 	State      PhaseCode  `json:"state"`
+	Attempts   int32      `json:"Attempts"`
 	Conditions Conditions `json:"Conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
-func (s *ReconcilableStatus) updatePreviousState(condition Condition) {
-	s.Conditions[0].LastTransitionTime = metav1.Now()
-	s.Conditions[0].Message = condition.Message
-	s.Conditions[0].Attempts += 1
-}
+/*
+*
 
+	func (s *ReconcilableStatus) updatePreviousState(condition Condition) {
+		s.Conditions[0].LastTransitionTime = metav1.Now()
+		s.Conditions[0].Message = condition.Message
+		s.Conditions[0].Attempts += 1
+	}
+
+*
+*/
 func (s *ReconcilableStatus) AddCondition(condition Condition) {
 	if len(s.Conditions) == 0 {
 		s.Conditions = []Condition{condition}
@@ -40,7 +46,8 @@ func (s *ReconcilableStatus) AddCondition(condition Condition) {
 	// TODO move a to check
 	exceedAllowedConditions := len(conditions) > 10
 	if conditions.isPreviousStatus(condition.Type) {
-		s.updatePreviousState(condition)
+		s.Conditions[0].Message = condition.Message
+		//s.updatePreviousState(condition)
 		return
 	}
 	endIndex := len(conditions)
@@ -78,6 +85,6 @@ func NewCondition(condType PhaseCode, reason string, message string) Condition {
 			Status:             metav1.ConditionTrue,
 			LastTransitionTime: metav1.Now(),
 		},
-		Attempts: 1,
+		//Attempts: 1,
 	}
 }
