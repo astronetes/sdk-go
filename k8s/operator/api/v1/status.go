@@ -20,7 +20,7 @@ func (c Conditions) isPreviousStatus(conditionType string) bool {
 type ReconcilableStatus struct {
 	Ready      bool       `json:"ready"`
 	State      PhaseCode  `json:"state"`
-	Conditions Conditions `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+	Conditions Conditions `json:"Conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 func (s *ReconcilableStatus) updatePreviousState(condition Condition) {
