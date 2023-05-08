@@ -8,7 +8,7 @@ type PhaseCode string
 
 type Condition struct {
 	metav1.Condition `json:",inline"`
-	//Attempts         int32 `json:"attempts,omitempty"`
+	// Attempts         int32 `json:"attempts,omitempty"`
 }
 
 type Conditions []Condition
@@ -24,6 +24,20 @@ type ReconcilableStatus struct {
 	Conditions Conditions `json:"Conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
+func (r *ReconcilableStatus) Next(phase PhaseCode, event string, msg string) {
+	r.Attempts = 0
+	condition := Condition{
+		Condition: metav1.Condition{
+			Type:               string(phase),
+			Reason:             event,
+			Message:            msg,
+			Status:             metav1.ConditionTrue,
+			LastTransitionTime: metav1.Now(),
+		},
+	}
+	r.addCondition(condition)
+}
+
 /*
 *
 
@@ -35,7 +49,7 @@ type ReconcilableStatus struct {
 
 *
 */
-func (s *ReconcilableStatus) AddCondition(condition Condition) {
+func (s *ReconcilableStatus) addCondition(condition Condition) {
 	if len(s.Conditions) == 0 {
 		s.Conditions = []Condition{condition}
 		return
@@ -47,7 +61,7 @@ func (s *ReconcilableStatus) AddCondition(condition Condition) {
 	exceedAllowedConditions := len(conditions) > 10
 	if conditions.isPreviousStatus(condition.Type) {
 		s.Conditions[0].Message = condition.Message
-		//s.updatePreviousState(condition)
+		// s.updatePreviousState(condition)
 		return
 	}
 	endIndex := len(conditions)
@@ -76,6 +90,7 @@ func (in *ReconcilableStatus) DeepCopyInto(out *ReconcilableStatus) {
 	*out = *in
 }
 
+/**
 func NewCondition(condType PhaseCode, reason string, message string) Condition {
 	return Condition{
 		Condition: metav1.Condition{
@@ -85,6 +100,8 @@ func NewCondition(condType PhaseCode, reason string, message string) Condition {
 			Status:             metav1.ConditionTrue,
 			LastTransitionTime: metav1.Now(),
 		},
-		//Attempts: 1,
+		// Attempts: 1,
 	}
 }
+
+*/
