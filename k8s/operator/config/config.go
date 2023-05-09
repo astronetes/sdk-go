@@ -1,6 +1,7 @@
 package config
 
 import (
+	"math"
 	"time"
 
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
@@ -49,6 +50,17 @@ type Phase struct {
 	RequeueAfter    *time.Duration  `yaml:"requeueAfter,omitempty"`
 	AllowedAttempts int32           `yaml:"allowedAttempts,omitempty"`
 	Meta            map[string]any  `yaml:"meta,omitempty"`
+}
+
+func (cfg Phase) GetRequeueAfterByAttemptNumber(attempt int32) *time.Duration {
+	if cfg.AllowedAttempts > 0 && cfg.AllowedAttempts < attempt {
+		return nil
+	}
+	index := int(math.Min(float64(len(cfg.Backoff)-1), float64(attempt)))
+	if index < 0 {
+		return cfg.RequeueAfter
+	}
+	return &cfg.Backoff[index]
 }
 
 func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase {
