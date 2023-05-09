@@ -12,28 +12,28 @@ import (
 )
 
 const (
-	okCode Code = iota
-	doneCode
-	failCode
+	OKCode Code = iota
+	CompletedCode
+	ErrorCode
 )
 
 var OK = func(msg string) Result {
 	return Result{
-		code: okCode,
+		code: OKCode,
 		msg:  msg,
 	}
 }
 
 var Error = func(err error) Result {
 	return Result{
-		code: failCode,
+		code: ErrorCode,
 		err:  err,
 	}
 }
 
 var Completed = func(msg string) Result {
 	return Result{
-		code: doneCode,
+		code: CompletedCode,
 		msg:  msg,
 	}
 }
@@ -70,7 +70,7 @@ func (r Result) After(t *time.Duration) Result {
 }
 
 func (r Result) RuntimeResult() (ctrl.Result, error) {
-	shouldRequeue := r.code != doneCode && (r.Code() == okCode || r.after != nil)
+	shouldRequeue := r.code != CompletedCode && (r.Code() == OKCode || r.after != nil)
 	if !shouldRequeue {
 		return ctrl.Result{}, r.err
 	}
