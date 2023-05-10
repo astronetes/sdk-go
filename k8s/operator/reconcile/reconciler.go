@@ -36,14 +36,14 @@ func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Res
 	// Initialize the Tracer
 	ctx, span := r.Tracer.Start(ctx, fmt.Sprintf("%s-reconcile", r.ID))
 	defer span.End()
-
+	status := obj.AstronetesStatus()
 	if err := r.Get(ctx, req.NamespacedName, obj); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	currentPhaseCode := v1.PhaseCode(obj.AstronetesStatus().GetCurrentPhase())
+	currentPhaseCode := v1.PhaseCode(status.GetCurrentPhase())
 
 	span.SetAttributes(attribute.String("phase", string(currentPhaseCode)))
-	span.SetAttributes(attribute.Int("attempt", int(obj.AstronetesStatus().Attempts)))
+	span.SetAttributes(attribute.Int("attempt", int(status.Attempts)))
 	span.SetAttributes(attribute.String("resource", obj.GetName()))
 	cfg := r.Config.GetConfigForReconciliationPhase(currentPhaseCode)
 
@@ -51,14 +51,14 @@ func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Res
 	ctx, cancel := context.WithDeadline(ctx, metav1.Now().Add(*cfg.Timeout))
 	defer cancel()
 
-	reachLimitOfTries := cfg.AllowedAttempts > 0 && obj.AstronetesStatus().Attempts > cfg.AllowedAttempts
+	reachLimitOfTries := cfg.AllowedAttempts > 0 && status.Attempts > cfg.AllowedAttempts
 
 	// The maximum number of attempts for the current phase is reached
 	if reachLimitOfTries {
-		span.AddEvent(fmt.Sprintf("Attempt number %v", obj.AstronetesStatus().Attempts))
-		err := fmt.Errorf("reach max number of allowed attempts (%v) for completing the phase '%s'", obj.AstronetesStatus().Attempts, currentPhaseCode)
-		obj.AstronetesStatus().AddErrorCause(err)
-		obj.AstronetesStatus().Next(v1.FailedPhase, ReachMaxAllowedAttemptsEvent, "phase not completed in max number of allowed attempts")
+		span.AddEvent(fmt.Sprintf("Attempt number %v", status.Attempts))
+		err := fmt.Errorf("reach max number of allowed attempts (%v) for completing the phase '%s'", status.Attempts, currentPhaseCode)
+		status.AddErrorCause(err)
+		status.Next(v1.FailedPhase, ReachMaxAllowedAttemptsEvent, "phase not completed in max number of allowed attempts")
 		if err := r.Status().Update(ctx, obj); err != nil {
 			log.Info(err.Error())
 			return ctrl.Result{}, err
@@ -69,9 +69,9 @@ func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Res
 
 	// Shouldn't be checked other possible flows If the status hasn't been initialized yet.
 	if "" == currentPhaseCode {
-		obj.AstronetesStatus().Next(r.Dispatcher.InitialPhaseCode, NewRequestEvent, "Starting the creation of resources")
-		obj.AstronetesStatus().Ready = false
-		obj.AstronetesStatus().State = v1.PhaseCode(obj.AstronetesStatus().Conditions[0].Type)
+		status.Next(r.Dispatcher.InitialPhaseCode, NewRequestEvent, "Starting the creation of resources")
+		status.Ready = false
+		status.State = v1.PhaseCode(status.Conditions[0].Type)
 		if err := r.Client.Status().Update(ctx, obj); err != nil {
 			log.Info(err.Error())
 		}
@@ -81,9 +81,9 @@ func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Res
 
 	// This is a special check to verify if the resource is already in "in deletion" (temporary status)
 	if !obj.GetDeletionTimestamp().IsZero() && !r.Dispatcher.IsOnDeletionPhase(currentPhaseCode) {
-		obj.AstronetesStatus().Next(v1.TerminatingPhase, TerminatingEvent, "Terminating the resource")
-		obj.AstronetesStatus().Ready = false
-		obj.AstronetesStatus().State = v1.PhaseCode(obj.AstronetesStatus().Conditions[0].Type)
+		status.Next(v1.TerminatingPhase, TerminatingEvent, "Terminating the resource")
+		status.Ready = false
+		status.State = v1.PhaseCode(status.Conditions[0].Type)
 		r.Recorder.Event(obj, corev1.EventTypeNormal, "Terminating resource", "Setting status as 'Terminating' for the resource")
 		if err := r.Client.Status().Update(ctx, obj); err != nil {
 			log.Info(err.Error())
@@ -102,21 +102,21 @@ func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Res
 		return ctrl.Result{Requeue: true}, nil
 	}
 
-	obj.AstronetesStatus().Attempts += 1
+	status.Attempts += 1
 	reconcileFn, err := r.Dispatcher.GetPhase(currentPhaseCode)
 	if err != nil {
 		span.RecordError(err)
 		return ctrl.Result{Requeue: false}, err
 	}
 	result := reconcileFn(ctx, r.Client, cfg, obj)
-	obj.AstronetesStatus().State = v1.PhaseCode(obj.AstronetesStatus().Conditions[0].Type)
+	status.State = v1.PhaseCode(status.Conditions[0].Type)
 	if err := r.Client.Status().Update(ctx, obj); err != nil {
 		log.Info(err.Error())
 	}
 	switch result.Code() {
 	case ErrorCode:
 		r.Recorder.Event(obj, corev1.EventTypeWarning, ErrorEvent, result.Message())
-		if requeueAfter := cfg.GetRequeueAfterByAttemptNumber(obj.AstronetesStatus().Attempts); requeueAfter != nil {
+		if requeueAfter := cfg.GetRequeueAfterByAttemptNumber(status.Attempts); requeueAfter != nil {
 			return ctrl.Result{
 				Requeue:      true,
 				RequeueAfter: *requeueAfter,
@@ -124,7 +124,7 @@ func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Res
 		}
 		return ctrl.Result{}, fmt.Errorf(result.Message())
 	case OKCode:
-		r.Recorder.Event(obj, corev1.EventTypeNormal, obj.AstronetesStatus().Conditions[0].Reason, result.Message())
+		r.Recorder.Event(obj, corev1.EventTypeNormal, status.Conditions[0].Reason, result.Message())
 		return ctrl.Result{
 			Requeue: true,
 		}, nil
