@@ -9,6 +9,8 @@ type PhaseCode string
 const (
 	FailedPhase      PhaseCode = "Failed"
 	TerminatingPhase PhaseCode = "Terminating"
+	ReadyPhase       PhaseCode = "Ready"
+	DeletedPhase     PhaseCode = "Deleted"
 )
 
 type Condition struct {
