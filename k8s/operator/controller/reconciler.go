@@ -18,7 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-type controller struct {
+type Astronetes struct {
 	client.Client
 	ID            string
 	FinalizerName string
@@ -29,7 +29,7 @@ type controller struct {
 	Dispatcher    Dispatcher
 }
 
-func (r *controller) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Resource) (ctrl.Result, error) {
+func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Resource) (ctrl.Result, error) {
 	// Initialize the logger
 	log := log.FromContext(ctx)
 	log.Info("reconciling Ingress Controller")
