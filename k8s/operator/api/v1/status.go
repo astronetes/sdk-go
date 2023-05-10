@@ -6,6 +6,11 @@ import (
 
 type PhaseCode string
 
+const (
+	FailedPhase      PhaseCode = "Failed"
+	TerminatingPhase PhaseCode = "Terminating"
+)
+
 type Condition struct {
 	metav1.Condition `json:",inline"`
 	Causes           []string `json:"Causes,omitempty"`
