@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+
 	"github.com/astronetes/sdk-go/k8s/operator/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -16,7 +17,7 @@ type Dispatcher[S v1.Resource] struct {
 }
 
 func (m Dispatcher[S]) ReconcilePhase(ctx context.Context, code v1.PhaseCode, c client.Client, cfg config.Phase, obj S) (Result, error) {
-	var p, ok = m.Phase(code)
+	p, ok := m.Phase(code)
 	if !ok {
 		return Result{}, fmt.Errorf("unknown phase")
 	}
