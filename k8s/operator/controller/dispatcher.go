@@ -1,21 +1,24 @@
 package controller
 
 import (
+	"context"
 	"fmt"
+	"github.com/astronetes/sdk-go/k8s/operator/config"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 )
 
-type Dispatcher struct {
-	Phases            map[v1.PhaseCode]PhaseReconcile[v1.Resource]
+type Dispatcher[S v1.Resource] struct {
+	Phase             func(code v1.PhaseCode) (PhaseReconcile[S], bool)
 	IsOnDeletionPhase func(code v1.PhaseCode) bool
 	InitialPhaseCode  v1.PhaseCode
 }
 
-func (m Dispatcher) GetPhase(code v1.PhaseCode) (PhaseReconcile[v1.Resource], error) {
-	p, ok := m.Phases[code]
+func (m Dispatcher[S]) ReconcilePhase(ctx context.Context, code v1.PhaseCode, c client.Client, cfg config.Phase, obj S) (Result, error) {
+	var p, ok = m.Phase(code)
 	if !ok {
-		return nil, fmt.Errorf("unknown phase")
+		return Result{}, fmt.Errorf("unknown phase")
 	}
-	return p, nil
+	return p(ctx, c, cfg, obj), nil
 }

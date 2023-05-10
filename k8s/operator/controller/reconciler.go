@@ -18,7 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-type Astronetes struct {
+type Astronetes[S v1.Resource] struct {
 	client.Client
 	ID            string
 	FinalizerName string
@@ -26,10 +26,10 @@ type Astronetes struct {
 	Tracer        trace.Tracer
 	Config        config.Controller
 	Scheme        *runtime.Scheme
-	Dispatcher    Dispatcher
+	Dispatcher    Dispatcher[S]
 }
 
-func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Resource) (ctrl.Result, error) {
+func (r *Astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error) {
 	// Initialize the logger
 	log := log.FromContext(ctx)
 	log.Info("reconciling Ingress Controller")
@@ -103,12 +103,11 @@ func (r *Astronetes) Reconcile(ctx context.Context, req ctrl.Request, obj v1.Res
 	}
 
 	status.Attempts += 1
-	reconcileFn, err := r.Dispatcher.GetPhase(currentPhaseCode)
+	result, err := r.Dispatcher.ReconcilePhase(ctx, currentPhaseCode, r.Client, cfg, obj)
 	if err != nil {
 		span.RecordError(err)
 		return ctrl.Result{Requeue: false}, err
 	}
-	result := reconcileFn(ctx, r.Client, cfg, obj)
 	status.State = v1.PhaseCode(status.Conditions[0].Type)
 	if err := r.Client.Status().Update(ctx, obj); err != nil {
 		log.Info(err.Error())
