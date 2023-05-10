@@ -3,6 +3,7 @@ package reconcile
 import (
 	"context"
 	"fmt"
+
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	"github.com/astronetes/sdk-go/k8s/operator/config"
 	"go.opentelemetry.io/otel/attribute"
