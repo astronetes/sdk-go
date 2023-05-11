@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	"github.com/astronetes/sdk-go/k8s/operator/config"
 	"go.opentelemetry.io/otel/attribute"
@@ -18,7 +17,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-type Astronetes[S v1.Resource] struct {
+type Astronetes[S v1.Resource] interface {
+	Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error)
+}
+
+type astronetes[S v1.Resource] struct {
 	client.Client
 	ID            string
 	FinalizerName string
@@ -27,9 +30,37 @@ type Astronetes[S v1.Resource] struct {
 	Config        config.Controller
 	Scheme        *runtime.Scheme
 	Dispatcher    Dispatcher[S]
+	corePhases    map[v1.PhaseCode]PhaseReconcile[S]
 }
 
-func (r *Astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error) {
+func (r *astronetes[S]) loadCorePhases() {
+	if r.corePhases == nil {
+		r.corePhases = make(map[v1.PhaseCode]PhaseReconcile[S])
+	}
+	r.corePhases[v1.ReadyPhase] = r.reconcileReady
+	r.corePhases[v1.FailedPhase] = r.reconcileFailed
+	r.corePhases[v1.TerminatingPhase] = r.reconcileTerminating
+	r.corePhases[v1.DeletedPhase] = r.reconcileDeleted
+}
+
+func NewAstronetesReconcile[S v1.Resource](client client.Client, id string, finalizerName string,
+	recorder record.EventRecorder, tracer trace.Tracer, config config.Controller, scheme *runtime.Scheme,
+	dispatcher Dispatcher[S]) Astronetes[S] {
+	a := &astronetes[S]{
+		Client:        client,
+		ID:            id,
+		FinalizerName: finalizerName,
+		Recorder:      recorder,
+		Tracer:        tracer,
+		Config:        config,
+		Scheme:        scheme,
+		Dispatcher:    dispatcher,
+	}
+	a.loadCorePhases()
+	return a
+}
+
+func (r *astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error) {
 	// Initialize the logger
 	log := log.FromContext(ctx)
 	log.Info("reconciling Ingress Controller")
@@ -69,7 +100,7 @@ func (r *Astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 
 	// Shouldn't be checked other possible flows If the status hasn't been initialized yet.
 	if "" == currentPhaseCode {
-		status.Next(r.Dispatcher.InitialPhaseCode, NewRequestEvent, "Starting the creation of resources")
+		status.Next(r.Dispatcher.InitialCreationPhaseCode, NewRequestEvent, "Starting the creation of resources")
 		status.Ready = false
 		status.State = v1.PhaseCode(status.Conditions[0].Type)
 		if err := r.Client.Status().Update(ctx, obj); err != nil {

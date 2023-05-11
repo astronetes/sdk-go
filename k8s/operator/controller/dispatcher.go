@@ -11,9 +11,10 @@ import (
 )
 
 type Dispatcher[S v1.Resource] struct {
-	Phase             func(code v1.PhaseCode) (PhaseReconcile[S], bool)
-	IsOnDeletionPhase func(code v1.PhaseCode) bool
-	InitialPhaseCode  v1.PhaseCode
+	Phase                    func(code v1.PhaseCode) (PhaseReconcile[S], bool)
+	IsOnDeletionPhase        func(code v1.PhaseCode) bool
+	InitialCreationPhaseCode v1.PhaseCode
+	InitialDeletionPhaseCode v1.PhaseCode
 }
 
 func (m Dispatcher[S]) ReconcilePhase(ctx context.Context, code v1.PhaseCode, c client.Client, cfg config.Phase, obj S) (Result, error) {

@@ -31,6 +31,10 @@ type ReconcilableStatus struct {
 	Conditions Conditions `json:"Conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
+func (in *ReconcilableStatus) SetReady(ready bool) {
+	in.Ready = ready
+}
+
 func (in *ReconcilableStatus) Next(phase PhaseCode, event string, msg string) {
 	in.Attempts = 0
 	condition := Condition{

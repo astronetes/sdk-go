@@ -2,15 +2,11 @@ package controller
 
 import (
 	"context"
-	"time"
-
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/astronetes/sdk-go/k8s/operator/config"
-
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 )
 
 const (
