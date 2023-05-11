@@ -3,6 +3,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"go.opentelemetry.io/otel"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	"github.com/astronetes/sdk-go/k8s/operator/config"
@@ -44,18 +46,17 @@ func (r *astronetes[S]) loadCorePhases() {
 	r.corePhases[v1.DeletedPhase] = r.reconcileDeleted
 }
 
-func NewAstronetesReconcile[S v1.Resource](client client.Client, id string, finalizerName string,
-	recorder record.EventRecorder, tracer trace.Tracer, config config.Controller, scheme *runtime.Scheme,
-	dispatcher Dispatcher[S],
+func NewAstronetesReconcile[S v1.Resource](id string, mgr manager.Manager, finalizerName string,
+	config config.Controller, dispatcher Dispatcher[S],
 ) Astronetes[S] {
 	a := &astronetes[S]{
-		Client:        client,
+		Client:        mgr.GetClient(),
 		ID:            id,
 		FinalizerName: finalizerName,
-		Recorder:      recorder,
-		Tracer:        tracer,
+		Recorder:      mgr.GetEventRecorderFor(id),
+		Tracer:        otel.Tracer(id),
 		Config:        config,
-		Scheme:        scheme,
+		Scheme:        mgr.GetScheme(),
 		Dispatcher:    dispatcher,
 	}
 	a.loadCorePhases()
@@ -113,7 +114,7 @@ func (r *astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 	}
 
 	// This is a special check to verify if the resource is already in "in deletion" (temporary status)
-	if !obj.GetDeletionTimestamp().IsZero() && !r.Dispatcher.IsOnDeletionPhase(currentPhaseCode) {
+	if !obj.GetDeletionTimestamp().IsZero() && !r.IsOnDeletionPhase(currentPhaseCode) {
 		status.Next(v1.TerminatingPhase, TerminatingEvent, "Terminating the resource")
 		status.Ready = false
 		status.State = v1.PhaseCode(status.Conditions[0].Type)
@@ -172,4 +173,8 @@ func (r *astronetes[S]) ReconcilePhase(ctx context.Context, code v1.PhaseCode, c
 		return r.Dispatcher.ReconcilePhase(ctx, code, c, cfg, obj)
 	}
 	return p(ctx, c, cfg, obj), nil
+}
+
+func (r *astronetes[S]) IsOnDeletionPhase(code v1.PhaseCode) bool {
+	return code == v1.TerminatingPhase || code == v1.DeletedPhase || r.Dispatcher.IsOnDeletionPhase(code)
 }
