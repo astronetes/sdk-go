@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	"github.com/astronetes/sdk-go/k8s/operator/config"
 	"go.opentelemetry.io/otel/attribute"
@@ -45,7 +46,8 @@ func (r *astronetes[S]) loadCorePhases() {
 
 func NewAstronetesReconcile[S v1.Resource](client client.Client, id string, finalizerName string,
 	recorder record.EventRecorder, tracer trace.Tracer, config config.Controller, scheme *runtime.Scheme,
-	dispatcher Dispatcher[S]) Astronetes[S] {
+	dispatcher Dispatcher[S],
+) Astronetes[S] {
 	a := &astronetes[S]{
 		Client:        client,
 		ID:            id,
@@ -134,7 +136,7 @@ func (r *astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 	}
 
 	status.Attempts += 1
-	result, err := r.Dispatcher.ReconcilePhase(ctx, currentPhaseCode, r.Client, cfg, obj)
+	result, err := r.ReconcilePhase(ctx, currentPhaseCode, r.Client, cfg, obj)
 	if err != nil {
 		span.RecordError(err)
 		return ctrl.Result{Requeue: false}, err
@@ -162,4 +164,12 @@ func (r *astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 		return ctrl.Result{}, nil
 	}
 	return ctrl.Result{}, fmt.Errorf("unexpected status")
+}
+
+func (r *astronetes[S]) ReconcilePhase(ctx context.Context, code v1.PhaseCode, c client.Client, cfg config.Phase, obj S) (Result, error) {
+	p, ok := r.corePhases[code]
+	if !ok {
+		return r.Dispatcher.ReconcilePhase(ctx, code, c, cfg, obj)
+	}
+	return p(ctx, c, cfg, obj), nil
 }

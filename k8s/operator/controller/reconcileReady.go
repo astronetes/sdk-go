@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+
 	"github.com/astronetes/sdk-go/k8s/operator/config"
 	"go.opentelemetry.io/otel/trace"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
