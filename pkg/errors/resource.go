@@ -3,37 +3,22 @@ package errors
 import "fmt"
 
 var (
-	MissingRequiredAttributeError = func(msg string) *ResourceError {
-		return &ResourceError{
-			AstronetesError: AstronetesError{
-				code: missingRequiredAttributeErrCode,
-				msg:  msg,
-			},
-		}
+	MissingRequiredAttributeError = func(msg string, args ...any) *ResourceError {
+		return NewResourceError(missingRequiredAttributeErrCode, msg, args...)
 	}
-	InvalidRequestError = func(msg string) *ResourceError {
-		return &ResourceError{
-			AstronetesError: AstronetesError{
-				code: invalidRequestErrCode,
-				msg:  msg,
-			},
-		}
+	InvalidRequestError = func(msg string, args ...any) *ResourceError {
+		return NewResourceError(invalidRequestErrCode, msg, args...)
 	}
-	UnknownResourceError = func(msg string) *ResourceError {
-		return &ResourceError{
-			AstronetesError: AstronetesError{
-				code: invalidRequestErrCode,
-				msg:  msg,
-			},
-		}
+	UnknownResourceError = func(msg string, args ...any) *ResourceError {
+		return NewResourceError(invalidRequestErrCode, msg, args...)
 	}
 )
 
-func NewResourceError(code ErrorCode, msg string) *ResourceError {
+func NewResourceError(code ErrorCode, msg string, args ...any) *ResourceError {
 	return &ResourceError{
 		AstronetesError: AstronetesError{
 			code: code,
-			msg:  msg,
+			msg:  fmt.Sprintf(msg, args),
 		},
 	}
 }
