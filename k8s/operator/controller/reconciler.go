@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+
 	"go.opentelemetry.io/otel"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
