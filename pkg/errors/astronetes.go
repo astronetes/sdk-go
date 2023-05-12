@@ -7,6 +7,7 @@ const errorsSite = "https://labs.astronetes.com/docs/errors"
 type AstronetesError struct {
 	code ErrorCode
 	msg  string
+	err  error
 	meta map[string]any
 }
 
@@ -19,4 +20,9 @@ func (err *AstronetesError) Set(key string, value any) {
 		err.meta = make(map[string]any)
 	}
 	err.meta[key] = value
+}
+
+func (err *AstronetesError) Wrap(er error) *AstronetesError {
+	err.err = er
+	return err
 }

@@ -2,27 +2,16 @@ package errors
 
 var (
 	CommunicationError = func(msg string) *ControllerError {
-		return &ControllerError{
-			ResourceError: NewResourceError(communicationErrCode, msg),
-		}
+		return NewControllerError(communicationErrCode, msg)
 	}
 	CreateCloudResourceError = func(msg string) *ControllerError {
-		return &ControllerError{
-			ResourceError: NewResourceError(createCloudResourceErrCode, msg),
-		}
+		return NewControllerError(createCloudResourceErrCode, msg)
 	}
 	DeleteCloudResourceError = func(msg string) *ControllerError {
-		return &ControllerError{
-			ResourceError: NewResourceError(deleteCloudResourceErrCode, msg),
-		}
+		return NewControllerError(deleteCloudResourceErrCode, msg)
 	}
-	UnknownControllerError = func(msg string) *ResourceError {
-		return &ResourceError{
-			AstronetesError: AstronetesError{
-				code: UnknownErrCode,
-				msg:  msg,
-			},
-		}
+	UnknownControllerError = func(msg string) *ControllerError {
+		return NewControllerError(UnknownErrCode, msg)
 	}
 )
 
