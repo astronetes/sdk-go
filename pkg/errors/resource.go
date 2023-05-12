@@ -19,6 +19,14 @@ var (
 			},
 		}
 	}
+	UnknownResourceError = func(msg string) *ResourceError {
+		return &ResourceError{
+			AstronetesError: AstronetesError{
+				code: invalidRequestErrCode,
+				msg:  msg,
+			},
+		}
+	}
 )
 
 func NewResourceError(code ErrorCode, msg string) *ResourceError {
