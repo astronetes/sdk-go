@@ -4,13 +4,13 @@ import "fmt"
 
 var (
 	MissingRequiredAttributeError = func(msg string, args ...any) *ResourceError {
-		return NewResourceError(missingRequiredAttributeErrCode, msg, args...)
+		return NewResourceError(MissingRequiredAttributeErrCode, msg, args...)
 	}
 	InvalidRequestError = func(msg string, args ...any) *ResourceError {
-		return NewResourceError(invalidRequestErrCode, msg, args...)
+		return NewResourceError(InvalidRequestErrCode, msg, args...)
 	}
 	UnknownResourceError = func(msg string, args ...any) *ResourceError {
-		return NewResourceError(invalidRequestErrCode, msg, args...)
+		return NewResourceError(UnknownErrCode, msg, args...)
 	}
 )
 

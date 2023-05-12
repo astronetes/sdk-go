@@ -2,13 +2,13 @@ package errors
 
 var (
 	CommunicationError = func(msg string, args ...any) *ControllerError {
-		return NewControllerError(communicationErrCode, msg, args)
+		return NewControllerError(CommunicationErrCode, msg, args)
 	}
 	CreateCloudResourceError = func(msg string, args ...any) *ControllerError {
-		return NewControllerError(createCloudResourceErrCode, msg, args)
+		return NewControllerError(CreateCloudResourceErrCode, msg, args)
 	}
 	DeleteCloudResourceError = func(msg string, args ...any) *ControllerError {
-		return NewControllerError(deleteCloudResourceErrCode, msg, args)
+		return NewControllerError(DeleteCloudResourceErrCode, msg, args)
 	}
 	UnknownControllerError = func(msg string, args ...any) *ControllerError {
 		return NewControllerError(UnknownErrCode, msg, args)

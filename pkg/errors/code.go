@@ -7,13 +7,13 @@ const (
 )
 
 const (
-	invalidRequestErrCode           ErrorCode = "ErrInvalidRequest"
-	missingRequiredAttributeErrCode ErrorCode = "ErrMissingRequiredAttribute"
+	InvalidRequestErrCode           ErrorCode = "ErrInvalidRequest"
+	MissingRequiredAttributeErrCode ErrorCode = "ErrMissingRequiredAttribute"
 )
 
 // TODO Should we use different error codes for Resource and Operator errors?
 const (
-	communicationErrCode       ErrorCode = "ErrCommunication"
-	createCloudResourceErrCode ErrorCode = "ErrCreateCloudResource"
-	deleteCloudResourceErrCode ErrorCode = "ErrDeleteCloudResource"
+	CommunicationErrCode       ErrorCode = "ErrCommunication"
+	CreateCloudResourceErrCode ErrorCode = "ErrCreateCloudResource"
+	DeleteCloudResourceErrCode ErrorCode = "ErrDeleteCloudResource"
 )
