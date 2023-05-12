@@ -5,24 +5,36 @@ import "fmt"
 var (
 	MissingRequiredAttributeError = func(msg string) *ResourceError {
 		return &ResourceError{
-			code: MissingRequiredAttributeErrCode,
-			msg:  msg,
+			AstronetesError: AstronetesError{
+				code: missingRequiredAttributeErrCode,
+				msg:  msg,
+			},
 		}
 	}
 	InvalidRequestError = func(msg string) *ResourceError {
 		return &ResourceError{
-			code: InvalidRequestErrCode,
-			msg:  msg,
+			AstronetesError: AstronetesError{
+				code: invalidRequestErrCode,
+				msg:  msg,
+			},
 		}
 	}
 )
 
+func NewResourceError(code ErrorCode, msg string) *ResourceError {
+	return &ResourceError{
+		AstronetesError: AstronetesError{
+			code: code,
+			msg:  msg,
+		},
+	}
+}
+
 type ResourceError struct {
-	code     ErrorCode
-	resource string
+	AstronetesError
 	ns       string
+	resource string
 	name     string
-	msg      string
 }
 
 func (err *ResourceError) WithNS(ns string) *ResourceError {
@@ -41,7 +53,7 @@ func (err *ResourceError) WithName(name string) *ResourceError {
 }
 
 func (err *ResourceError) Error() string {
-	var resourcePath = ""
+	resourcePath := ""
 	if err.ns != "" || err.resource != "" {
 		resourcePath = err.ns + " / " + err.resource
 	}

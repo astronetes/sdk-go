@@ -3,6 +3,6 @@ package errors
 type ErrorCode string
 
 const (
-	InvalidRequestErrCode           ErrorCode = "ErrInvalidRequest"
-	MissingRequiredAttributeErrCode ErrorCode = "ErrMissingRequiredAttribute"
+	invalidRequestErrCode           ErrorCode = "ErrInvalidRequest"
+	missingRequiredAttributeErrCode ErrorCode = "ErrMissingRequiredAttribute"
 )

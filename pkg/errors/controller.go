@@ -1,4 +1,3 @@
 package errors
 
-type ControllerError struct {
-}
+type ControllerError struct{}
