@@ -21,3 +21,7 @@ func (err *AstronetesError) Set(key string, value any) {
 	}
 	err.meta[key] = value
 }
+
+func (err *AstronetesError) Is(code ErrorCode) bool {
+	return err.code == code
+}
