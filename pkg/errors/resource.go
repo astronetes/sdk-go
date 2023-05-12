@@ -45,6 +45,11 @@ func (err *ResourceError) WithName(name string) *ResourceError {
 	return err
 }
 
+func (err *ResourceError) Wrap(er error) *ResourceError {
+	err.err = er
+	return err
+}
+
 func (err *ResourceError) Error() string {
 	resourcePath := ""
 	if err.ns != "" || err.resource != "" {

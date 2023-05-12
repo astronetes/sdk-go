@@ -31,6 +31,11 @@ func (err *ControllerError) WithPhase(phase string) *ControllerError {
 	return err
 }
 
+func (err *ControllerError) Wrap(er error) *ControllerError {
+	err.err = er
+	return err
+}
+
 func (err *ControllerError) Error() string {
 	errMsg := ""
 	if err.phase != "" {

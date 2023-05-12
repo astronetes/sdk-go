@@ -21,8 +21,3 @@ func (err *AstronetesError) Set(key string, value any) {
 	}
 	err.meta[key] = value
 }
-
-func (err *AstronetesError) Wrap(er error) *AstronetesError {
-	err.err = er
-	return err
-}
