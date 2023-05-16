@@ -28,7 +28,7 @@ type Reconciler[S v1.Resource] interface {
 	Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)
 }
 
-type Operations[S v1.Resource] func(ctx context.Context, c client.Client, cfg Config, obj S) error
+type Operations[S v1.Resource] func(ctx context.Context, c client.Client, cfg Config, obj S) (*ctrl.Result, error)
 
 type reconciler[S v1.Resource] struct {
 	client.Client
@@ -42,7 +42,8 @@ type reconciler[S v1.Resource] struct {
 }
 
 func New[S v1.Resource](id string, mgr manager.Manager, finalizerName string,
-	config Config, creationOperations Operations[S], deletionOperations Operations[S]) Reconciler[S] {
+	config Config, creationOperations Operations[S], deletionOperations Operations[S],
+) Reconciler[S] {
 	return &reconciler[S]{
 		Client:                          mgr.GetClient(),
 		Scheme:                          mgr.GetScheme(),

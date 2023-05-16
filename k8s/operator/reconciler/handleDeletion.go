@@ -45,7 +45,8 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg
 
 			// Perform all operations required before remove the finalizer and allow
 			// the Kubernetes API to remove the custom resource.
-			if err := r.doDeletionOperationsForResource(ctx, c, cfg, obj); err != nil {
+			// TODO Check what can I do with the result....
+			if _, err := r.doDeletionOperationsForResource(ctx, c, cfg, obj); err != nil {
 				log.Error(err, "Failed to perform finalizer operations")
 				return RequeueWithError(err)
 			}

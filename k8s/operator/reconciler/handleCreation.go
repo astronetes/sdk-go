@@ -35,7 +35,7 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, c client.Client, cfg
 	)
 	// Perform all operations required before remove the finalizer and allow
 	// the Kubernetes API to remove the custom resource.
-	if err := r.doCreationOperationForResource(ctx, c, cfg, obj); err != nil {
+	if _, err := r.doCreationOperationForResource(ctx, c, cfg, obj); err != nil {
 		log.Error(err, "Failed to perform creation operations")
 		return RequeueWithError(err)
 	}
