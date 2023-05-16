@@ -10,6 +10,9 @@ var (
 	DeleteCloudResourceError = func(msg string, args ...any) *ControllerError {
 		return NewControllerError(DeleteCloudResourceErrCode, msg, args)
 	}
+	CloudResourceNotFoundError = func(msg string, args ...any) *ControllerError {
+		return NewControllerError(CloudResourceNotFoundErrCode, msg, args)
+	}
 	UnknownControllerError = func(msg string, args ...any) *ControllerError {
 		return NewControllerError(UnknownErrCode, msg, args)
 	}

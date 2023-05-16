@@ -1,6 +1,9 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 var (
 	MissingRequiredAttributeError = func(msg string, args ...any) *ResourceError {
@@ -8,6 +11,9 @@ var (
 	}
 	InvalidRequestError = func(msg string, args ...any) *ResourceError {
 		return NewResourceError(InvalidRequestErrCode, msg, args...)
+	}
+	InvalidFormatError = func(msg string, args ...any) *ResourceError {
+		return NewResourceError(InvalidFormatErrCode, msg, args...)
 	}
 	UnknownResourceError = func(msg string, args ...any) *ResourceError {
 		return NewResourceError(UnknownErrCode, msg, args...)
@@ -28,6 +34,12 @@ type ResourceError struct {
 	ns       string
 	resource string
 	name     string
+}
+
+func (err *ResourceError) WithResourceDetails(obj v1.Object) *ResourceError {
+	err.ns = obj.GetNamespace()
+	err.name = obj.GetName()
+	return err
 }
 
 func (err *ResourceError) WithNS(ns string) *ResourceError {
