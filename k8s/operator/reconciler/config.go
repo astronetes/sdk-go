@@ -1,8 +1,9 @@
 package reconciler
 
 import (
-	"github.com/astronetes/sdk-go/k8s/operator/provider"
 	"time"
+
+	"github.com/astronetes/sdk-go/k8s/operator/provider"
 )
 
 type Config struct {
