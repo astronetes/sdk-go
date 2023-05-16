@@ -2,12 +2,13 @@ package reconciler
 
 import (
 	"context"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func (r *subreconciler[S]) AddFinalizer(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
+func (r *reconciler[S]) addFinalizer(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	var obj S

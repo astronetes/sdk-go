@@ -3,6 +3,7 @@ package reconciler
 import (
 	"context"
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -10,8 +11,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// handleDelete is a function of type subreconciler.FnWithRequest
-func (r *subreconciler[S]) handleDelete(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
+// handleDeletion is a function of type reconciler.FnWithRequest
+func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	var obj S
 
@@ -29,9 +30,11 @@ func (r *subreconciler[S]) handleDelete(ctx context.Context, req ctrl.Request) (
 			log.Info("Performing Finalizer Operations for resource before delete CR")
 
 			// Let's add here an status "Downgrade" to define that this resource begin its process to be terminated.
-			meta.SetStatusCondition(&obj.AstronetesStatus().Conditions, metav1.Condition{Type: typeDegradedResource,
+			meta.SetStatusCondition(&obj.Status().Conditions, metav1.Condition{
+				Type:   typeDegradedResource,
 				Status: metav1.ConditionUnknown, Reason: "Finalizing",
-				Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName())})
+				Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName()),
+			})
 
 			if err := r.Status().Update(ctx, obj); err != nil {
 				log.Error(err, "Failed to update resource status")
@@ -40,7 +43,7 @@ func (r *subreconciler[S]) handleDelete(ctx context.Context, req ctrl.Request) (
 
 			// Perform all operations required before remove the finalizer and allow
 			// the Kubernetes API to remove the custom resource.
-			if err := r.doFinalizerOperationsForResource(obj); err != nil {
+			if err := r.doDeletionOperationsForResource(ctx, req, obj); err != nil {
 				log.Error(err, "Failed to perform finalizer operations")
 				return RequeueWithError(err)
 			}
@@ -54,9 +57,12 @@ func (r *subreconciler[S]) handleDelete(ctx context.Context, req ctrl.Request) (
 				return RequeueWithError(err)
 			}
 
-			meta.SetStatusCondition(&obj.AstronetesStatus().Conditions, metav1.Condition{Type: typeDegradedResource,
-				Status: metav1.ConditionTrue, Reason: "Finalizing",
-				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", obj.GetName())})
+			meta.SetStatusCondition(&obj.Status().Conditions, metav1.Condition{
+				Type:    typeDegradedResource,
+				Status:  metav1.ConditionTrue,
+				Reason:  "Finalizing",
+				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", obj.GetName()),
+			})
 
 			if err := r.Status().Update(ctx, obj); err != nil {
 				log.Error(err, "Failed to update Memcached status")

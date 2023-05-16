@@ -7,21 +7,21 @@ import (
 )
 
 var (
-	MissingRequiredAttributeError = func(msg string, args ...any) *ResourceError {
-		return NewResourceError(MissingRequiredAttributeErrCode, msg, args...)
+	MissingRequiredAttributeError = func(msg string, args ...any) error {
+		return newResourceError(MissingRequiredAttributeErrCode, msg, args...)
 	}
-	InvalidRequestError = func(msg string, args ...any) *ResourceError {
-		return NewResourceError(InvalidRequestErrCode, msg, args...)
+	InvalidRequestError = func(msg string, args ...any) error {
+		return newResourceError(InvalidRequestErrCode, msg, args...)
 	}
-	InvalidFormatError = func(msg string, args ...any) *ResourceError {
-		return NewResourceError(InvalidFormatErrCode, msg, args...)
+	InvalidFormatError = func(msg string, args ...any) error {
+		return newResourceError(InvalidFormatErrCode, msg, args...)
 	}
-	UnknownResourceError = func(msg string, args ...any) *ResourceError {
-		return NewResourceError(UnknownErrCode, msg, args...)
+	UnknownResourceError = func(msg string, args ...any) error {
+		return newResourceError(UnknownErrCode, msg, args...)
 	}
 )
 
-func NewResourceError(code ErrorCode, msg string, args ...any) *ResourceError {
+func newResourceError(code ErrorCode, msg string, args ...any) *ResourceError {
 	return &ResourceError{
 		AstronetesError: AstronetesError{
 			code: code,

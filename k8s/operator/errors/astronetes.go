@@ -1,6 +1,9 @@
 package errors
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const errorsSite = "https://labs.astronetes.com/docs/errors"
 
@@ -24,4 +27,16 @@ func (err *AstronetesError) Set(key string, value any) {
 
 func (err *AstronetesError) Is(code ErrorCode) bool {
 	return err.code == code
+}
+
+func (err *AstronetesError) Unwrap() error {
+	return err.err
+}
+
+func (err *AstronetesError) Dig() *AstronetesError {
+	var ew *AstronetesError
+	if errors.As(err.err, &ew) {
+		return ew.Dig()
+	}
+	return err
 }

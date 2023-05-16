@@ -71,7 +71,7 @@ func (r *astronetes[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 	// Initialize the Tracer
 	ctx, span := r.Tracer.Start(ctx, fmt.Sprintf("%s-reconcile", r.ID))
 	defer span.End()
-	status := obj.AstronetesStatus()
+	status := obj.Status()
 	if err := r.Get(ctx, req.NamespacedName, obj); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}

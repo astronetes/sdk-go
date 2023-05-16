@@ -2,69 +2,89 @@ package reconciler
 
 import (
 	"context"
+	"github.com/astronetes/sdk-go/k8s/operator/config"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 // Definitions to manage status conditions
 const (
-	// typeAvailableResource represents the status of the Deployment reconciliation
-	typeAvailableResource = "Available"
+	// typeReadyResource represents the status of the Deployment reconciliation
+	typeReadyResource = "Ready"
 	// typeDegradedResource represents the status used when the custom resource is deleted and the finalizer operations are must to occur.
 	typeDegradedResource = "Degraded"
 )
 
-type Subreconciler[S v1.Resource] interface {
+type Reconciler[S v1.Resource] interface {
+	Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)
 }
 
-// Requeue returns a controller result pairing specifying to
-// requeue with no error message implied. This returns no error.
-func Requeue() (*reconcile.Result, error) { return &ctrl.Result{Requeue: true}, nil }
-
-// DoNotRequeue returns a controller result pairing specifying not to requeue.
-func DoNotRequeue() (*reconcile.Result, error) { return &ctrl.Result{Requeue: false}, nil }
-
-// RequeueWithError returns a controller result pairing specifying to
-// requeue with an error message.
-func RequeueWithError(e error) (*reconcile.Result, error) { return &ctrl.Result{Requeue: true}, e }
-
-// ContinueReconciling indicates that the reconciliation block should continue by
-// returning a nil result and a nil error
-func ContinueReconciling() (*reconcile.Result, error) { return nil, nil }
-
-// ShouldHaltOrRequeue returns true if reconciler result is not nil
-// or the err is not nil. In theory, the error evaluation
-// is not needed because ShouldRequeue handles it, but
-// it's included in case ShouldHaltOrRequeue is called directly.
-func ShouldHaltOrRequeue(r *ctrl.Result, err error) bool {
-	return (r != nil) || ShouldRequeue(r, err)
-}
-
-// ShouldRequeue returns true if the reconciler result indicates
-// a requeue is required, or the error is not nil.
-func ShouldRequeue(r *ctrl.Result, err error) bool {
-	// if we get a nil value for result, we need to
-	// fill it with an empty value which would not trigger
-	// a requeue.
-
-	res := r
-	if r.IsZero() {
-		res = &ctrl.Result{}
-	}
-	return res.Requeue || (err != nil)
-}
-
-type subreconciler[S v1.Resource] struct {
+type reconciler[S v1.Resource] struct {
 	client.Client
-	finalizerName                    string
-	doFinalizerOperationsForResource func(obj S) error
+	finalizerName                   string
+	Recorder                        record.EventRecorder
+	Tracer                          trace.Tracer
+	Scheme                          *runtime.Scheme
+	doDeletionOperationsForResource func(ctx context.Context, req ctrl.Request, obj S) error
+	doCreationOperationForResource  func(ctx context.Context, req ctrl.Request, obj S) error
 }
 
-func (r *subreconciler[S]) getLatest(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
+func New[S v1.Resource](id string, mgr manager.Manager, finalizerName string,
+	config config.Controller) Reconciler[S] {
+	return &reconciler[S]{
+		Client:                          mgr.GetClient(),
+		Scheme:                          mgr.GetScheme(),
+		finalizerName:                   finalizerName,
+		doDeletionOperationsForResource: nil,
+		doCreationOperationForResource:  nil,
+		Recorder:                        mgr.GetEventRecorderFor(id),
+		Tracer:                          otel.Tracer(id),
+	}
+}
+
+// setStatusToUnknown is a function of type subreconciler.FnWithRequest
+func (r *reconciler[S]) startReconciliation(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
+	log := log.FromContext(ctx)
+	var obj S
+
+	// Fetch the latest Memcached
+	// If this fails, bubble up the reconcile results to the main reconciler
+	if r, err := r.getLatest(ctx, req, obj); ShouldHaltOrRequeue(r, err) {
+		return r, err
+	}
+
+	// Let's just set the status as Unknown when no status are available
+	if obj.Status().Conditions == nil || len(obj.Status().Conditions) == 0 {
+		meta.SetStatusCondition(
+			&obj.Status().Conditions,
+			metav1.Condition{
+				Type:    typeReadyResource,
+				Status:  metav1.ConditionUnknown,
+				Reason:  "Reconciling",
+				Message: "Starting reconciliation",
+			},
+		)
+		if err := r.Status().Update(ctx, obj); err != nil {
+			log.Error(err, "Failed to update resource status")
+			return RequeueWithError(err)
+		}
+	}
+
+	return ContinueReconciling()
+}
+
+func (r *reconciler[S]) getLatest(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	if err := r.Get(ctx, req.NamespacedName, obj); err != nil {
 		if apierrors.IsNotFound(err) {

@@ -13,6 +13,7 @@ const (
 	DeletedPhase     PhaseCode = "Deleted"
 )
 
+/**
 type Condition struct {
 	metav1.Condition `json:",inline"`
 	Causes           []string `json:"Causes,omitempty"`
@@ -23,6 +24,7 @@ type Conditions []Condition
 func (c Conditions) isPreviousStatus(conditionType string) bool {
 	return len(c) > 0 && conditionType == c[0].Type
 }
+**/
 
 type ReconcilableStatus struct {
 	Ready      bool               `json:"Ready"`
@@ -35,6 +37,7 @@ func (in *ReconcilableStatus) SetReady(ready bool) {
 	in.Ready = ready
 }
 
+/**
 func (in *ReconcilableStatus) Next(phase PhaseCode, event string, msg string) {
 	in.Attempts = 0
 	condition := Condition{
@@ -47,7 +50,7 @@ func (in *ReconcilableStatus) Next(phase PhaseCode, event string, msg string) {
 	}
 	in.addCondition(condition)
 }
-
+**/
 /*
 *
 
@@ -59,6 +62,7 @@ func (in *ReconcilableStatus) Next(phase PhaseCode, event string, msg string) {
 
 *
 */
+/**
 func (in *ReconcilableStatus) addCondition(condition Condition) {
 	condition.Status = metav1.ConditionTrue
 	if len(in.Conditions) == 0 {
@@ -99,9 +103,15 @@ func (in *ReconcilableStatus) DeepCopyInto(out *ReconcilableStatus) {
 	*out = *in
 }
 
+/**
 func (in *ReconcilableStatus) AddErrorCause(err error) {
 	if in.Conditions[0].Causes == nil {
 		in.Conditions[0].Causes = make([]string, 0)
 	}
 	in.Conditions[0].Causes = append(in.Conditions[0].Causes, err.Error())
+}
+*/
+
+func (in *ReconcilableStatus) DeepCopyInto(out *ReconcilableStatus) {
+	*out = *in
 }
