@@ -13,6 +13,9 @@ var (
 	CloudResourceNotFoundError = func(msg string, args ...any) error {
 		return newControllerError(CloudResourceNotFoundErrCode, msg, args)
 	}
+	ProviderError = func(msg string, args ...any) error {
+		return newControllerError(ProviderErrorErrCode, msg, args)
+	}
 	UnknownControllerError = func(msg string, args ...any) error {
 		return newControllerError(UnknownErrCode, msg, args)
 	}

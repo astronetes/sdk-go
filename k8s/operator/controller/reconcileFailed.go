@@ -19,19 +19,19 @@ func (r *astronetes[S]) reconcileFailed(ctx context.Context, client rClient.Clie
 	span := trace.SpanFromContext(ctx)
 	_, span = span.TracerProvider().Tracer(r.ID).Start(ctx, "reconcile-failed")
 	defer span.End()
-	if obj.Status().State != v12.FailedPhase {
-		obj.Status().Conditions[0].Status = v1.ConditionFalse
+	if obj.AstronetesStatus().State != v12.FailedPhase {
+		obj.AstronetesStatus().Conditions[0].Status = v1.ConditionFalse
 		span.AddEvent("The execution cannot continue due to errors'")
 		return Completed("The execution cannot continue due to errors")
 	}
 	if obj.GetDeletionTimestamp().IsZero() {
 		msg := fmt.Sprintf("Reesume the creation of the resources")
 		span.AddEvent(msg)
-		obj.Status().Next(r.Dispatcher.InitialCreationPhaseCode, ResumeCreationEvent, "Resume the creation of the resources")
+		obj.AstronetesStatus().Next(r.Dispatcher.InitialCreationPhaseCode, ResumeCreationEvent, "Resume the creation of the resources")
 	} else {
 		msg := fmt.Sprintf("Reesume the deletion of the resources")
 		span.AddEvent(msg)
-		obj.Status().Next(r.Dispatcher.InitialDeletionPhaseCode, ResumeDeletionEvent, "Resume the deletion of the resources")
+		obj.AstronetesStatus().Next(r.Dispatcher.InitialDeletionPhaseCode, ResumeDeletionEvent, "Resume the deletion of the resources")
 	}
 	return OK("resume execution")
 }

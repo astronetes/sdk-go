@@ -3,6 +3,7 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,7 +13,7 @@ import (
 )
 
 // handleDeletion is a function of type reconciler.FnWithRequest
-func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
+func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg Config, req ctrl.Request) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	var obj S
 
@@ -30,7 +31,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request) (*
 			log.Info("Performing Finalizer Operations for resource before delete CR")
 
 			// Let's add here an status "Downgrade" to define that this resource begin its process to be terminated.
-			meta.SetStatusCondition(&obj.Status().Conditions, metav1.Condition{
+			meta.SetStatusCondition(&obj.AstronetesStatus().Conditions, metav1.Condition{
 				Type:   typeDegradedResource,
 				Status: metav1.ConditionUnknown, Reason: "Finalizing",
 				Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName()),
@@ -43,7 +44,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request) (*
 
 			// Perform all operations required before remove the finalizer and allow
 			// the Kubernetes API to remove the custom resource.
-			if err := r.doDeletionOperationsForResource(ctx, req, obj); err != nil {
+			if err := r.doDeletionOperationsForResource(ctx, c, cfg, obj); err != nil {
 				log.Error(err, "Failed to perform finalizer operations")
 				return RequeueWithError(err)
 			}
@@ -57,7 +58,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request) (*
 				return RequeueWithError(err)
 			}
 
-			meta.SetStatusCondition(&obj.Status().Conditions, metav1.Condition{
+			meta.SetStatusCondition(&obj.AstronetesStatus().Conditions, metav1.Condition{
 				Type:    typeDegradedResource,
 				Status:  metav1.ConditionTrue,
 				Reason:  "Finalizing",

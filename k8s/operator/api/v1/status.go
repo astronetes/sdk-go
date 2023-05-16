@@ -64,7 +64,7 @@ func (in *ReconcilableStatus) Next(phase PhaseCode, event string, msg string) {
 */
 /**
 func (in *ReconcilableStatus) addCondition(condition Condition) {
-	condition.Status = metav1.ConditionTrue
+	condition.AstronetesStatus = metav1.ConditionTrue
 	if len(in.Conditions) == 0 {
 		in.Conditions = []Condition{condition}
 		return
@@ -75,7 +75,7 @@ func (in *ReconcilableStatus) addCondition(condition Condition) {
 		return
 	}
 
-	in.Conditions[0].Status = metav1.ConditionFalse
+	in.Conditions[0].AstronetesStatus = metav1.ConditionFalse
 	exceedAllowedConditions := len(in.Conditions) > 10
 
 	endIndex := len(in.Conditions)

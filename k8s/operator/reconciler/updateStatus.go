@@ -3,6 +3,8 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -10,7 +12,7 @@ import (
 )
 
 // updateStatus is a function of type subreconciler.FnWithRequest
-func (r *reconciler[S]) updateStatus(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
+func (r *reconciler[S]) updateStatus(ctx context.Context, c client.Client, cfg Config, req ctrl.Request) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	var obj S
 
@@ -20,11 +22,12 @@ func (r *reconciler[S]) updateStatus(ctx context.Context, req ctrl.Request) (*ct
 		return r, err
 	}
 	// The following implementation will update the status
-	meta.SetStatusCondition(&obj.Status().Conditions, metav1.Condition{
+	meta.SetStatusCondition(&obj.AstronetesStatus().Conditions, metav1.Condition{
 		Type:    typeReadyResource,
 		Status:  metav1.ConditionTrue,
 		Reason:  "Reconciling",
-		Message: fmt.Sprintf("Creations of resources  for custom resource (%s) with was completed successfully", obj.GetName())})
+		Message: fmt.Sprintf("Creations of resources  for custom resource (%s) with was completed successfully", obj.GetName()),
+	})
 
 	if err := r.Status().Update(ctx, obj); err != nil {
 		log.Error(err, "Failed to update Memcached status")

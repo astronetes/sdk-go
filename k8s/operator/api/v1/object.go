@@ -8,5 +8,5 @@ import (
 type Resource interface {
 	runtime.Object
 	metav1.Object
-	Status() *ReconcilableStatus
+	AstronetesStatus() *ReconcilableStatus
 }

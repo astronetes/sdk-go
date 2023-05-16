@@ -2,13 +2,15 @@ package reconciler
 
 import (
 	"context"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 // FnWithRequest is a function definition representing small
 // reconciliation behavior. The request is included as a parameter.
-type FnWithRequest = func(context.Context, ctrl.Request) (*ctrl.Result, error)
+type FnWithRequest = func(ctx context.Context, c client.Client, cfg Config, req ctrl.Request) (*ctrl.Result, error)
 
 // Requeue returns a controller result pairing specifying to
 // requeue with no error message implied. This returns no error.
@@ -65,7 +67,7 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	// Run all subreconcilers sequentially
 	for _, f := range subreconcilersForResource {
-		if r, err := f(ctx, req); ShouldHaltOrRequeue(r, err) {
+		if r, err := f(ctx, r.Client, r.config, req); ShouldHaltOrRequeue(r, err) {
 			return Evaluate(r, err)
 		}
 	}

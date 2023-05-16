@@ -2,11 +2,9 @@ package reconciler
 
 import (
 	"context"
-	"github.com/astronetes/sdk-go/k8s/operator/config"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -30,58 +28,31 @@ type Reconciler[S v1.Resource] interface {
 	Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)
 }
 
+type Operations[S v1.Resource] func(ctx context.Context, c client.Client, cfg Config, obj S) error
+
 type reconciler[S v1.Resource] struct {
 	client.Client
+	config                          Config
 	finalizerName                   string
 	Recorder                        record.EventRecorder
 	Tracer                          trace.Tracer
 	Scheme                          *runtime.Scheme
-	doDeletionOperationsForResource func(ctx context.Context, req ctrl.Request, obj S) error
-	doCreationOperationForResource  func(ctx context.Context, req ctrl.Request, obj S) error
+	doDeletionOperationsForResource Operations[S]
+	doCreationOperationForResource  Operations[S]
 }
 
 func New[S v1.Resource](id string, mgr manager.Manager, finalizerName string,
-	config config.Controller) Reconciler[S] {
+	config Config, creationOperations Operations[S], deletionOperations Operations[S]) Reconciler[S] {
 	return &reconciler[S]{
 		Client:                          mgr.GetClient(),
 		Scheme:                          mgr.GetScheme(),
 		finalizerName:                   finalizerName,
-		doDeletionOperationsForResource: nil,
-		doCreationOperationForResource:  nil,
+		doDeletionOperationsForResource: deletionOperations,
+		doCreationOperationForResource:  creationOperations,
 		Recorder:                        mgr.GetEventRecorderFor(id),
 		Tracer:                          otel.Tracer(id),
+		config:                          config,
 	}
-}
-
-// setStatusToUnknown is a function of type subreconciler.FnWithRequest
-func (r *reconciler[S]) startReconciliation(ctx context.Context, req ctrl.Request) (*ctrl.Result, error) {
-	log := log.FromContext(ctx)
-	var obj S
-
-	// Fetch the latest Memcached
-	// If this fails, bubble up the reconcile results to the main reconciler
-	if r, err := r.getLatest(ctx, req, obj); ShouldHaltOrRequeue(r, err) {
-		return r, err
-	}
-
-	// Let's just set the status as Unknown when no status are available
-	if obj.Status().Conditions == nil || len(obj.Status().Conditions) == 0 {
-		meta.SetStatusCondition(
-			&obj.Status().Conditions,
-			metav1.Condition{
-				Type:    typeReadyResource,
-				Status:  metav1.ConditionUnknown,
-				Reason:  "Reconciling",
-				Message: "Starting reconciliation",
-			},
-		)
-		if err := r.Status().Update(ctx, obj); err != nil {
-			log.Error(err, "Failed to update resource status")
-			return RequeueWithError(err)
-		}
-	}
-
-	return ContinueReconciling()
 }
 
 func (r *reconciler[S]) getLatest(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {

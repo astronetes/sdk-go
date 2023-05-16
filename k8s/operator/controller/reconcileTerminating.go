@@ -18,9 +18,9 @@ func (r *astronetes[S]) reconcileTerminating(ctx context.Context, c_ client.Clie
 	defer span.End()
 	span.AddEvent("IngressController/Terminating")
 	if controllerutil.ContainsFinalizer(obj, r.FinalizerName) {
-		obj.Status().Next(r.Dispatcher.InitialDeletionPhaseCode, FinalizerExists, "Ready to start the destruction of the resources")
+		obj.AstronetesStatus().Next(r.Dispatcher.InitialDeletionPhaseCode, FinalizerExists, "Ready to start the destruction of the resources")
 	} else {
-		obj.Status().Next(r.Dispatcher.InitialDeletionPhaseCode, MissingFinalizer, "Already terminated")
+		obj.AstronetesStatus().Next(r.Dispatcher.InitialDeletionPhaseCode, MissingFinalizer, "Already terminated")
 	}
 	return OK("ingress controller was updated successfully")
 }

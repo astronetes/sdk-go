@@ -18,4 +18,5 @@ const (
 	CreateCloudResourceErrCode   ErrorCode = "ErrCreateCloudResource"
 	DeleteCloudResourceErrCode   ErrorCode = "ErrDeleteCloudResource"
 	CloudResourceNotFoundErrCode ErrorCode = "ErrCloudResourceNotFound"
+	ProviderErrorErrCode         ErrorCode = "ErrUnexpectedErrorSettingProvider"
 )

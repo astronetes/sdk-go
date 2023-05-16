@@ -17,7 +17,7 @@ func (r *astronetes[S]) reconcileReady(ctx context.Context, c client.Client, cfg
 	_, span = span.TracerProvider().Tracer(r.ID).Start(ctx, "reconcile-ready")
 	defer span.End()
 	span.AddEvent("The resource is ready")
-	obj.Status().Conditions[0].Status = metav1.ConditionFalse
-	obj.Status().SetReady(true)
+	obj.AstronetesStatus().Conditions[0].Status = metav1.ConditionFalse
+	obj.AstronetesStatus().SetReady(true)
 	return Completed("Resource is created successfully")
 }
