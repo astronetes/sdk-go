@@ -7,26 +7,6 @@ import (
 
 type PhaseCode string
 
-const (
-	FailedPhase      PhaseCode = "Failed"
-	TerminatingPhase PhaseCode = "Terminating"
-	ReadyPhase       PhaseCode = "Ready"
-	DeletedPhase     PhaseCode = "Deleted"
-)
-
-/**
-type Condition struct {
-	metav1.Condition `json:",inline"`
-	Causes           []string `json:"Causes,omitempty"`
-}
-
-type Conditions []Condition
-
-func (c Conditions) isPreviousStatus(conditionType string) bool {
-	return len(c) > 0 && conditionType == c[0].Type
-}
-**/
-
 type ReconcilableStatus struct {
 	Ready      bool               `json:"ready"`
 	State      PhaseCode          `json:"state"`
