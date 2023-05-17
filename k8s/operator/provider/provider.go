@@ -6,6 +6,7 @@ import (
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	"github.com/astronetes/sdk-go/k8s/operator/errors"
 
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -16,8 +17,8 @@ type (
 
 type Provider[T v1.Resource] interface {
 	SetUp(ctx context.Context, runtimeClient client.Client, cfg Config) error
-	Create(ctx context.Context, obj T) error
-	Delete(ctx context.Context, obj T) error
+	Create(ctx context.Context, obj T) (*ctrl.Result, error)
+	Delete(ctx context.Context, obj T) (*ctrl.Result, error)
 }
 
 type Manager[T v1.Resource] struct {
