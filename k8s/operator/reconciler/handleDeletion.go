@@ -14,9 +14,8 @@ import (
 )
 
 // handleDeletion is a function of type reconciler.FnWithRequest
-func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg Config, req ctrl.Request) (*ctrl.Result, error) {
+func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg Config, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	var obj S
 
 	// Fetch the latest Memcached
 	// If this fails, bubble up the reconcile results to the main reconciler

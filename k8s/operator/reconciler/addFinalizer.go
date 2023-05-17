@@ -10,10 +10,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func (r *reconciler[S]) addFinalizer(ctx context.Context, c client.Client, cfg Config, req ctrl.Request) (*ctrl.Result, error) {
+func (r *reconciler[S]) addFinalizer(ctx context.Context, c client.Client, cfg Config, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
-
-	var obj S
 
 	// Fetch the latest Memcached
 	// If this fails, bubble up the reconcile results to the main reconciler

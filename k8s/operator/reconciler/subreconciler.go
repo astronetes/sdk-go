@@ -25,7 +25,7 @@ const (
 )
 
 type Reconciler[S v1.Resource] interface {
-	Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)
+	Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error)
 }
 
 type Operations[S v1.Resource] func(ctx context.Context, c client.Client, cfg Config, obj S) (*ctrl.Result, error)
