@@ -6,7 +6,6 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -31,11 +30,12 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg
 			log.Info("Performing Finalizer Operations for resource before delete CR")
 
 			// Let's add here an status "Downgrade" to define that this resource begin its process to be terminated.
-			meta.SetStatusCondition(&obj.AstronetesStatus().Conditions, metav1.Condition{
-				Type:   typeDegradedResource,
-				Status: metav1.ConditionUnknown, Reason: "Finalizing",
-				Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName()),
-			})
+			obj.ReconcilableStatus().SetStatusCondition(
+				metav1.Condition{
+					Type:   typeDegradedResource,
+					Status: metav1.ConditionUnknown, Reason: "Finalizing",
+					Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName()),
+				})
 
 			if err := r.Status().Update(ctx, obj); err != nil {
 				log.Error(err, "Failed to update resource status")
@@ -59,7 +59,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg
 				return RequeueWithError(err)
 			}
 
-			meta.SetStatusCondition(&obj.AstronetesStatus().Conditions, metav1.Condition{
+			obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
 				Type:    typeDegradedResource,
 				Status:  metav1.ConditionTrue,
 				Reason:  "Finalizing",

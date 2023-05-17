@@ -6,7 +6,6 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -23,8 +22,7 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, c client.Client, cfg
 	}
 
 	// The following implementation will update the status
-	meta.SetStatusCondition(
-		&obj.AstronetesStatus().Conditions,
+	obj.ReconcilableStatus().SetStatusCondition(
 		metav1.Condition{
 			Type:    typeReadyResource,
 			Status:  metav1.ConditionFalse,

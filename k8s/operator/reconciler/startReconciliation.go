@@ -3,7 +3,6 @@ package reconciler
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,9 +20,8 @@ func (r *reconciler[S]) startReconciliation(ctx context.Context, c client.Client
 	}
 
 	// Let's just set the status as Unknown when no status are available
-	if obj.AstronetesStatus().Conditions == nil || len(obj.AstronetesStatus().Conditions) == 0 {
-		meta.SetStatusCondition(
-			&obj.AstronetesStatus().Conditions,
+	if obj.ReconcilableStatus().Conditions == nil || len(obj.ReconcilableStatus().Conditions) == 0 {
+		obj.ReconcilableStatus().SetStatusCondition(
 			metav1.Condition{
 				Type:    typeReadyResource,
 				Status:  metav1.ConditionUnknown,

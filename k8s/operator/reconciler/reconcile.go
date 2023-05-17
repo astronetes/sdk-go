@@ -2,8 +2,10 @@ package reconciler
 
 import (
 	"context"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -63,8 +65,11 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 
 	// Run all subreconcilers sequentially
 	for _, f := range subreconcilersForResource {
-		if r, err := f(ctx, r.Client, r.config, req, obj); ShouldHaltOrRequeue(r, err) {
-			return Evaluate(r, err)
+		if res, err := f(ctx, r.Client, r.config, req, obj); ShouldHaltOrRequeue(res, err) {
+			if err != nil {
+				r.Recorder.Event(obj, corev1.EventTypeWarning, "UnexpectedError", err.Error())
+			}
+			return Evaluate(res, err)
 		}
 	}
 
