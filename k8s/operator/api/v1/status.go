@@ -8,7 +8,6 @@ import (
 type PhaseCode string
 
 type ReconcilableStatus struct {
-	Ready      bool               `json:"ready"`
 	State      PhaseCode          `json:"state"`
 	Attempts   int32              `json:"attempts"`
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
@@ -24,10 +23,6 @@ func (in *ReconcilableStatus) SetStatusCondition(condition metav1.Condition) {
 		condition,
 	)
 	in.Conditions = conditions
-}
-
-func (in *ReconcilableStatus) SetReady(ready bool) {
-	in.Ready = ready
 }
 
 func (in *ReconcilableStatus) DeepCopy(out *ReconcilableStatus) {
