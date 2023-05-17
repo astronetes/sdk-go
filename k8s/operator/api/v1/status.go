@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,7 +33,7 @@ func (in *ReconcilableStatus) SetStatusCondition(condition metav1.Condition) {
 	in.Conditions = conditions
 }
 
-func SetState4(ctx context.Context, c client.Client, obj Resource, state string) error {
+func SetState(ctx context.Context, c client.Client, obj Resource, state string) error {
 	log := log.FromContext(ctx)
 	obj.ReconcilableStatus().State = PhaseCode(state)
 	if err := c.Status().Update(ctx, obj); err != nil {
