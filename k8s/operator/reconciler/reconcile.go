@@ -57,7 +57,7 @@ func ShouldRequeue(r *ctrl.Result, err error) bool {
 
 func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error) {
 	log := log2.FromContext(ctx)
-	// The list of subreconcilers for Memcached
+	// The list of subreconcilers for resource
 	subreconcilersForResource := []func(ctx context.Context, c client.Client, cfg Config, req ctrl.Request, obj S) (*ctrl.Result, error){
 		r.startReconciliation,
 		r.addFinalizer,
@@ -75,7 +75,7 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 			return Evaluate(res, err)
 		}
 		if err := r.Status().Update(ctx, obj); err != nil {
-			log.Error(err, "Failed to update Memcached status")
+			log.Error(err, "Failed to update the resource status")
 			return Evaluate(RequeueWithError(err))
 		}
 	}

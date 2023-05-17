@@ -29,7 +29,7 @@ func (r *reconciler[S]) updateStatus(ctx context.Context, c client.Client, cfg C
 	})
 
 	if err := r.Status().Update(ctx, obj); err != nil {
-		log.Error(err, "Failed to update Memcached status")
+		log.Error(err, "Failed to update resource status")
 		return RequeueWithError(err)
 	}
 
