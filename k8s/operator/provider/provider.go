@@ -12,21 +12,10 @@ import (
 type (
 	ID      string
 	GroupID string
-	Status  int32
-)
-
-const (
-	Uncreated = iota
-	OnCreation
-	Ready
-	OnDeletion
-	Deleted
-	Unknown
 )
 
 type Provider[T v1.Resource] interface {
 	SetUp(ctx context.Context, runtimeClient client.Client, cfg Config) error
-	Status(ctx context.Context, obj T) (Status, error)
 	Create(ctx context.Context, obj T) error
 	Delete(ctx context.Context, obj T) error
 }

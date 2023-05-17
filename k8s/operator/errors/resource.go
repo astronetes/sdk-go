@@ -23,7 +23,7 @@ var (
 
 func newResourceError(code ErrorCode, msg string, args ...any) *ResourceError {
 	if len(args) > 0 {
-		msg = fmt.Sprintf(msg, args)
+		msg = fmt.Sprintf(msg, args...)
 	}
 	return &ResourceError{
 		AstronetesError: AstronetesError{
