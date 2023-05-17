@@ -53,6 +53,7 @@ func (in *ReconcilableStatus) SetReady(ready bool) {
 func (in *ReconcilableStatus) DeepCopy(out *ReconcilableStatus) {
 	*out = *in
 }
+
 func (in *ReconcilableStatus) DeepCopyInto(out *ReconcilableStatus) {
 	*out = *in
 }
