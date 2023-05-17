@@ -2,6 +2,7 @@ package reconciler
 
 import (
 	"context"
+	log2 "github.com/astronetes/sdk-go/log"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -54,6 +55,7 @@ func ShouldRequeue(r *ctrl.Result, err error) bool {
 }
 
 func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error) {
+	log := log2.FromContext(ctx)
 	// The list of subreconcilers for Memcached
 	subreconcilersForResource := []func(ctx context.Context, c client.Client, cfg Config, req ctrl.Request, obj S) (*ctrl.Result, error){
 		r.startReconciliation,
@@ -70,6 +72,10 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 				r.Recorder.Event(obj, corev1.EventTypeWarning, "UnexpectedError", err.Error())
 			}
 			return Evaluate(res, err)
+		}
+		if err := r.Status().Update(ctx, obj); err != nil {
+			log.Error(err, "Failed to update Memcached status")
+			return Evaluate(RequeueWithError(err))
 		}
 	}
 

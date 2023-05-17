@@ -25,7 +25,7 @@ func (r *reconciler[S]) updateStatus(ctx context.Context, c client.Client, cfg C
 		Type:    typeReadyResource,
 		Status:  metav1.ConditionTrue,
 		Reason:  "Reconciling",
-		Message: fmt.Sprintf("Creations of resources  for custom resource (%s) with was completed successfully", obj.GetName()),
+		Message: fmt.Sprintf("Creations of resources  for custom resource (%s)  was completed successfully", obj.GetName()),
 	})
 
 	if err := r.Status().Update(ctx, obj); err != nil {
