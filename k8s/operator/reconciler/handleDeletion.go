@@ -32,8 +32,9 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg
 			// Let's add here an status "Downgrade" to define that this resource begin its process to be terminated.
 			obj.ReconcilableStatus().SetStatusCondition(
 				metav1.Condition{
-					Type:   typeDegradedResource,
-					Status: metav1.ConditionUnknown, Reason: "Finalizing",
+					Type:    typeDegradedResource,
+					Status:  metav1.ConditionUnknown,
+					Reason:  "Finalizing",
 					Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName()),
 				})
 

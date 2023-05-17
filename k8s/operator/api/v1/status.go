@@ -28,10 +28,10 @@ func (c Conditions) isPreviousStatus(conditionType string) bool {
 **/
 
 type ReconcilableStatus struct {
-	Ready      bool               `json:"Ready"`
-	State      PhaseCode          `json:"State"`
-	Attempts   int32              `json:"Attempts"`
-	Conditions []metav1.Condition `json:"Conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+	Ready      bool               `json:"ready"`
+	State      PhaseCode          `json:"state"`
+	Attempts   int32              `json:"attempts"`
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 func (in *ReconcilableStatus) SetStatusCondition(condition metav1.Condition) {

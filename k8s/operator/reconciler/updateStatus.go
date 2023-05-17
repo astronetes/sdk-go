@@ -24,7 +24,7 @@ func (r *reconciler[S]) updateStatus(ctx context.Context, c client.Client, cfg C
 	obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
 		Type:    typeReadyResource,
 		Status:  metav1.ConditionTrue,
-		Reason:  "Reconciling",
+		Reason:  "Reconciled",
 		Message: fmt.Sprintf("Creations of resources  for custom resource (%s)  was completed successfully", obj.GetName()),
 	})
 

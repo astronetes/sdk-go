@@ -3,10 +3,9 @@ package reconciler
 import (
 	"context"
 	"fmt"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -21,19 +20,41 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, c client.Client, cfg
 		return r, err
 	}
 
-	// The following implementation will update the status
+	log.Info("Performing Reconciliation operations for tje resource")
 	obj.ReconcilableStatus().SetStatusCondition(
 		metav1.Condition{
 			Type:    typeReadyResource,
-			Status:  metav1.ConditionFalse,
-			Reason:  "Reconciled",
-			Message: fmt.Sprintf("The custom resource (%s) has been created usccessfully", obj.GetName()),
-		},
-	)
+			Status:  metav1.ConditionUnknown,
+			Reason:  "Reconciling",
+			Message: fmt.Sprintf("Performing reconciling operations for the custom resource: %s ", obj.GetName()),
+		})
+
+	if err := r.Status().Update(ctx, obj); err != nil {
+		log.Error(err, "Failed to update resource status")
+		return RequeueWithError(err)
+	}
+
 	// Perform all operations required before remove the finalizer and allow
 	// the Kubernetes API to remove the custom resource.
 	if _, err := r.doCreationOperationForResource(ctx, c, cfg, obj); err != nil {
 		log.Error(err, "Failed to perform creation operations")
+		return RequeueWithError(err)
+	}
+
+	if err := r.Get(ctx, req.NamespacedName, obj); err != nil {
+		log.Error(err, "Failed to re-fetch resource")
+		return RequeueWithError(err)
+	}
+
+	obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
+		Type:    typeReadyResource,
+		Status:  metav1.ConditionTrue,
+		Reason:  "Reconciling",
+		Message: fmt.Sprintf("Reconciling operations for custom resource %s name were successfully accomplished", obj.GetName()),
+	})
+
+	if err := r.Status().Update(ctx, obj); err != nil {
+		log.Error(err, "Failed to update resource status")
 		return RequeueWithError(err)
 	}
 
