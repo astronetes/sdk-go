@@ -5,12 +5,13 @@ import (
 )
 
 type Config struct {
-	Controllers map[string]reconciler.Config `yaml:"controllers,omitempty"`
-	Monitoring  Monitoring                   `yaml:"monitoring,omitempty"`
+	Controllers map[string]reconciler.Config `mapstructure:"controllers,omitempty"`
+	Monitoring  Monitoring                   `mapstructure:"monitoring,omitempty"`
+	Namespace   string                       `mapstructure:"namespace,omitempty"`
 }
 
 type Monitoring struct {
-	Address  string `yaml:"address,omitempty"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
+	Address  string `mapstructure:"address,omitempty"`
+	Username string `mapstructure:"username,omitempty"`
+	Password string `mapstructure:"password,omitempty"`
 }

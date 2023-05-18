@@ -9,11 +9,11 @@ import (
 const defaultRequeueTime = 5 * time.Second
 
 type Config struct {
-	Timeout          *time.Duration                                `json:"timeout,omitempty" yaml:"timeout,omitempty"`
-	RequeueDelayTime []time.Duration                               `json:"requeueDelayTime,omitempty" yaml:"requeueDelayTime,omitempty"`
-	MaxConditions    int                                           `json:"maxConditions,omitempty" yaml:"maxConditions,omitempty"`
-	Meta             map[string]any                                `json:"meta,omitempty" yaml:"meta,omitempty"`
-	Providers        map[provider.GroupID]provider.ProvidersConfig `json:"providers,omitempty"  yaml:"providers,omitempty"`
+	Timeout          *time.Duration                                `mapstructure:"timeout,omitempty" `
+	RequeueDelayTime []time.Duration                               `mapstructure:"requeueDelayTime,omitempty"`
+	MaxConditions    int                                           `mapstructure:"maxConditions,omitempty"`
+	Meta             map[string]any                                `mapstructure:"meta,omitempty"`
+	Providers        map[provider.GroupID]provider.ProvidersConfig `mapstructure:"providers,omitempty"`
 }
 
 func (c *Config) GetRequeueTimeForAttempt(attempt int) time.Duration {
