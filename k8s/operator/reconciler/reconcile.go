@@ -2,6 +2,7 @@ package reconciler
 
 import (
 	"context"
+	"time"
 
 	log2 "github.com/astronetes/sdk-go/log"
 
@@ -26,6 +27,10 @@ func RequeueWithError(e error) (*reconcile.Result, error) { return &ctrl.Result{
 // ContinueReconciling indicates that the reconciliation block should continue by
 // returning a nil result and a nil error
 func ContinueReconciling() (*reconcile.Result, error) { return nil, nil }
+
+func RequeueAfter(duration time.Duration) (*reconcile.Result, error) {
+	return &ctrl.Result{Requeue: true, RequeueAfter: duration}, nil
+}
 
 // ShouldHaltOrRequeue returns true if reconciler result is not nil
 // or the err is not nil. In theory, the error evaluation
