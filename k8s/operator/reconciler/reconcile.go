@@ -2,6 +2,7 @@ package reconciler
 
 import (
 	"context"
+
 	errors2 "github.com/astronetes/sdk-go/k8s/operator/errors"
 	corev1 "k8s.io/api/core/v1"
 
@@ -111,6 +112,7 @@ func (r *reconciler[S]) getLatest(ctx context.Context, req ctrl.Request, obj S) 
 
 func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error) {
 	log := log2.FromContext(ctx)
+	r.Recorder.Event(obj, corev1.EventTypeNormal, "Reconciling", "Starting the reconciliation process.")
 	// The list of subreconcilers for resource
 	subreconcilersForResource := []func(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error){
 		r.startReconciliation,
@@ -140,7 +142,7 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 			return Evaluate(RequeueWithError(err))
 		}
 	}
-
+	r.Recorder.Event(obj, corev1.EventTypeNormal, "Reconciling", "The reconciliation process ended.")
 	return Evaluate(DoNotRequeue())
 }
 

@@ -3,6 +3,7 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/meta"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -27,10 +28,16 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 		if controllerutil.ContainsFinalizer(obj, r.finalizerName) {
 			log.Info("Performing Finalizer Operations for resource before delete CR")
 
+			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, typeDeletedResource, metav1.ConditionUnknown) {
+				obj.ReconcilableStatus().Attempts += 1
+			} else {
+				obj.ReconcilableStatus().Attempts = 1
+			}
+
 			// Let's add here an status "Downgrade" to define that this resource begin its process to be terminated.
 			obj.ReconcilableStatus().SetStatusCondition(
 				metav1.Condition{
-					Type:    typeDegradedResource,
+					Type:    typeDeletedResource,
 					Status:  metav1.ConditionUnknown,
 					Reason:  "Finalizing",
 					Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName()),
@@ -44,9 +51,19 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 			// Perform all operations required before remove the finalizer and allow
 			// the Kubernetes API to remove the custom resource.
 			// TODO Check what can I do with the result....
-			if _, err := r.subReconciler.Delete(ctx, obj); err != nil {
-				log.Error(err, "Failed to perform finalizer operations")
-				return RequeueWithError(err)
+			res, err := r.subReconciler.Delete(ctx, obj)
+			if updateStatusErr := r.Status().Update(ctx, obj); updateStatusErr != nil {
+				log.Error(updateStatusErr, "Failed to update resource status")
+				return RequeueWithError(updateStatusErr)
+			}
+			if err != nil {
+				log.Error(err, "Failed to perform creation operations")
+			}
+			if ShouldRequeue(res, err) {
+				if res.RequeueAfter == 0 {
+					res.RequeueAfter = r.config.GetRequeueTimeForAttempt(int(obj.ReconcilableStatus().Attempts))
+				}
+				return res, err
 			}
 
 			// Re-fetch the resource Custom Resource before update the status
@@ -59,7 +76,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 			}
 
 			obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
-				Type:    typeDegradedResource,
+				Type:    typeDeletedResource,
 				Status:  metav1.ConditionTrue,
 				Reason:  "Finalizing",
 				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", obj.GetName()),

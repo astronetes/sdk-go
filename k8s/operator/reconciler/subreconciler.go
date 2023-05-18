@@ -2,6 +2,7 @@ package reconciler
 
 import (
 	"context"
+
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -19,8 +20,8 @@ import (
 const (
 	// typeReadyResource represents the status of the Deployment reconciliation
 	typeReadyResource = "Ready"
-	// typeDegradedResource represents the status used when the custom resource is deleted and the finalizer operations are must to occur.
-	typeDegradedResource = "Deleted"
+	// typeDeletedResource represents the status used when the custom resource is deleted and the finalizer operations are must to occur.
+	typeDeletedResource = "Deleted"
 )
 
 type Handler[S v1.Resource] interface {
