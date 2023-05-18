@@ -1,12 +1,8 @@
 package v1
 
 import (
-	"context"
-
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type PhaseCode string
@@ -31,16 +27,6 @@ func (in *ReconcilableStatus) SetStatusCondition(condition metav1.Condition) {
 		condition,
 	)
 	in.Conditions = conditions
-}
-
-func SetState(ctx context.Context, c client.Client, obj Resource, state string) error {
-	log := log.FromContext(ctx)
-	obj.ReconcilableStatus().State = PhaseCode(state)
-	if err := c.Status().Update(ctx, obj); err != nil {
-		log.Error(err, "Failed to update Memcached status")
-		return err
-	}
-	return nil
 }
 
 func (in *ReconcilableStatus) DeepCopy(out *ReconcilableStatus) {

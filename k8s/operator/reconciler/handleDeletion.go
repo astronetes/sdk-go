@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -13,7 +11,7 @@ import (
 )
 
 // handleDeletion is a function of type reconciler.FnWithRequest
-func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg Config, req ctrl.Request, obj S) (*ctrl.Result, error) {
+func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	// Fetch the latest Memcached
@@ -46,7 +44,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, c client.Client, cfg
 			// Perform all operations required before remove the finalizer and allow
 			// the Kubernetes API to remove the custom resource.
 			// TODO Check what can I do with the result....
-			if _, err := r.doDeletionOperationsForResource(ctx, c, cfg, obj); err != nil {
+			if _, err := r.subReconciler.Delete(ctx, obj); err != nil {
 				log.Error(err, "Failed to perform finalizer operations")
 				return RequeueWithError(err)
 			}

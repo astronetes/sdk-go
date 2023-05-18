@@ -5,12 +5,11 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // setStatusToUnknown is a function of type subreconciler.FnWithRequest
-func (r *reconciler[S]) startReconciliation(ctx context.Context, c client.Client, cfg Config, req ctrl.Request, obj S) (*ctrl.Result, error) {
+func (r *reconciler[S]) startReconciliation(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	// Fetch the latest Memcached

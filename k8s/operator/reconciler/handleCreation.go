@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // handleCreation is a function of type subreconciler.FnWithRequest
-func (r *reconciler[S]) handleCreation(ctx context.Context, c client.Client, cfg Config, req ctrl.Request, obj S) (*ctrl.Result, error) {
+func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	// Fetch the latest Memcached
@@ -43,7 +41,7 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, c client.Client, cfg
 
 	// Perform all operations required before remove the finalizer and allow
 	// the Kubernetes API to remove the custom resource.
-	res, err := r.doCreationOperationForResource(ctx, c, cfg, obj)
+	res, err := r.subReconciler.Reconcile(ctx, obj)
 	if updateStatusErr := r.Status().Update(ctx, obj); updateStatusErr != nil {
 		log.Error(updateStatusErr, "Failed to update resource status")
 		return RequeueWithError(updateStatusErr)
