@@ -2,8 +2,6 @@ package reconciler
 
 import (
 	"context"
-	"time"
-
 	log2 "github.com/astronetes/sdk-go/log"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,20 +15,16 @@ import (
 // requeue with no error message implied. This returns no error.
 func Requeue() (*reconcile.Result, error) { return &ctrl.Result{Requeue: true}, nil }
 
-// DoNotRequeue returns a controller result pairing specifying not to requeue.
-func DoNotRequeue() (*reconcile.Result, error) { return &ctrl.Result{Requeue: false}, nil }
-
 // RequeueWithError returns a controller result pairing specifying to
 // requeue with an error message.
 func RequeueWithError(e error) (*reconcile.Result, error) { return &ctrl.Result{Requeue: true}, e }
 
+// DoNotRequeue returns a controller result pairing specifying not to requeue.
+func DoNotRequeue() (*reconcile.Result, error) { return &ctrl.Result{Requeue: false}, nil }
+
 // ContinueReconciling indicates that the reconciliation block should continue by
 // returning a nil result and a nil error
 func ContinueReconciling() (*reconcile.Result, error) { return nil, nil }
-
-func RequeueAfter(duration time.Duration) (*reconcile.Result, error) {
-	return &ctrl.Result{Requeue: true, RequeueAfter: duration}, nil
-}
 
 // ShouldHaltOrRequeue returns true if reconciler result is not nil
 // or the err is not nil. In theory, the error evaluation
