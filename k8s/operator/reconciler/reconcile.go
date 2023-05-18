@@ -2,6 +2,8 @@ package reconciler
 
 import (
 	"context"
+	errors2 "github.com/astronetes/sdk-go/k8s/operator/errors"
+	corev1 "k8s.io/api/core/v1"
 
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	"go.opentelemetry.io/otel"
@@ -15,7 +17,6 @@ import (
 
 	log2 "github.com/astronetes/sdk-go/log"
 
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -123,7 +124,14 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 	for _, f := range subreconcilersForResource {
 		if res, err := f(ctx, req, obj); ShouldHaltOrRequeue(res, err) {
 			if err != nil {
-				r.Recorder.Event(obj, corev1.EventTypeWarning, "UnexpectedError", err.Error())
+				switch x := err.(type) {
+				case *errors2.ResourceError:
+					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()), "'%s', check documentation at '%s", x.Msg(), x.DocRef())
+				case *errors2.ControllerError:
+					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()), "'%s', check documentation at '%s", x.Msg(), x.DocRef())
+				default:
+					r.Recorder.Event(obj, corev1.EventTypeWarning, "Error", err.Error())
+				}
 			}
 			return Evaluate(res, err)
 		}

@@ -14,8 +14,16 @@ type AstronetesError struct {
 	meta map[string]any
 }
 
+func (err *AstronetesError) Msg() string {
+	return err.msg
+}
+
 func (err *AstronetesError) DocRef() string {
 	return fmt.Sprintf("%s/%s", errorsSite, err.code)
+}
+
+func (err *AstronetesError) Code() ErrorCode {
+	return err.code
 }
 
 func (err *AstronetesError) Set(key string, value any) {

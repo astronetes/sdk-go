@@ -2,6 +2,8 @@ package reconciler
 
 import (
 	"context"
+	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"go.opentelemetry.io/otel/trace"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,7 +20,7 @@ const (
 	// typeReadyResource represents the status of the Deployment reconciliation
 	typeReadyResource = "Ready"
 	// typeDegradedResource represents the status used when the custom resource is deleted and the finalizer operations are must to occur.
-	typeDegradedResource = "Degraded"
+	typeDegradedResource = "Deleted"
 )
 
 type Handler[S v1.Resource] interface {
@@ -28,6 +30,7 @@ type Handler[S v1.Resource] interface {
 
 type SubReconcilerHandler[S v1.Resource] struct {
 	client.Client
+	Manager  manager.Manager
 	Config   Config
 	Recorder record.EventRecorder
 	Tracer   trace.Tracer
@@ -41,5 +44,10 @@ func (h *SubReconcilerHandler[S]) SetState(ctx context.Context, obj S, state v1.
 		log.Error(err, "Failed to update Memcached status")
 		return err
 	}
+	h.RecordEvent(obj, string(state), "Set status to '%s'", string(state))
 	return nil
+}
+
+func (h *SubReconcilerHandler[S]) RecordEvent(obj S, reason string, msg string, args ...interface{}) {
+	h.Recorder.Eventf(obj, corev1.EventTypeWarning, reason, msg, args...)
 }
