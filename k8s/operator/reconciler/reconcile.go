@@ -2,6 +2,7 @@ package reconciler
 
 import (
 	"context"
+
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"

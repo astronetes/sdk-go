@@ -2,6 +2,7 @@ package reconciler
 
 import (
 	"context"
+
 	"go.opentelemetry.io/otel/trace"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
