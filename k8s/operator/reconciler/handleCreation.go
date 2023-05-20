@@ -2,7 +2,6 @@ package reconciler
 
 import (
 	"context"
-	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,21 +20,26 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, ob
 	}
 
 	log.Info("Performing Reconciliation operations for the resource")
-	if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, typeReadyResource, metav1.ConditionUnknown) {
+	if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeReady, metav1.ConditionUnknown) {
 		obj.ReconcilableStatus().Attempts += 1
 	} else {
 		obj.ReconcilableStatus().Attempts = 1
 	}
-	obj.ReconcilableStatus().SetStatusCondition(
-		metav1.Condition{
-			Type:    typeReadyResource,
-			Status:  metav1.ConditionUnknown,
-			Reason:  "Reconciling",
-			Message: fmt.Sprintf("Performing reconciling operations for the custom resource: %s ", obj.GetName()),
+
+	condition := meta.FindStatusCondition(obj.ReconcilableStatus().Conditions, ConditionTypeReady)
+
+	// Condition doesn't exist and must be created
+	if condition == nil {
+		obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
+			Type:    ConditionTypeReady,
+			Status:  metav1.ConditionTrue,
+			Reason:  ConditionReasonReconciling,
+			Message: MessageReconciliationInProcess,
 		})
+	}
 
 	if err := r.Status().Update(ctx, obj); err != nil {
-		log.Error(err, "Failed to update resource status")
+		log.Error(err, ErrorUpdatingStatus)
 		return RequeueWithError(err)
 	}
 
@@ -43,10 +47,11 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, ob
 	// the Kubernetes API to remove the custom resource.
 	res, err := r.subReconciler.Reconcile(ctx, obj)
 	if updateStatusErr := r.Status().Update(ctx, obj); updateStatusErr != nil {
-		log.Error(updateStatusErr, "Failed to update resource status")
+		log.Error(updateStatusErr, ErrorUpdatingStatus)
 		return RequeueWithError(updateStatusErr)
 	}
 	if err != nil {
+		r.subReconciler.SetReconcilingMessage(ctx, obj, err.Error())
 		log.Error(err, "Failed to perform creation operations")
 	}
 	if ShouldRequeue(res, err) {
@@ -62,14 +67,14 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, ob
 	}
 
 	obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
-		Type:    typeReadyResource,
+		Type:    ConditionTypeReady,
 		Status:  metav1.ConditionTrue,
-		Reason:  "Reconciling",
-		Message: fmt.Sprintf("Reconciling operations for custom resource %s name were successfully accomplished", obj.GetName()),
+		Reason:  ConditionReasonReconciling,
+		Message: MessageReconciliationCompleted,
 	})
 
 	if err := r.Status().Update(ctx, obj); err != nil {
-		log.Error(err, "Failed to update resource status")
+		log.Error(err, ErrorUpdatingStatus)
 		return RequeueWithError(err)
 	}
 

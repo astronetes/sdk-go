@@ -2,7 +2,6 @@ package reconciler
 
 import (
 	"context"
-	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -20,10 +19,10 @@ func (r *reconciler[S]) updateStatus(ctx context.Context, req ctrl.Request, obj 
 	}
 	// The following implementation will update the status
 	obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
-		Type:    typeReadyResource,
+		Type:    ConditionTypeReady,
 		Status:  metav1.ConditionTrue,
 		Reason:  "Reconciled",
-		Message: fmt.Sprintf("Creations of resources  for custom resource (%s)  was completed successfully", obj.GetName()),
+		Message: MessageReconciliationCompleted,
 	})
 
 	if err := r.Status().Update(ctx, obj); err != nil {

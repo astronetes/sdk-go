@@ -7,6 +7,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"go.opentelemetry.io/otel/trace"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -16,17 +18,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-// Definitions to manage status conditions
-const (
-	// typeReadyResource represents the status of the Deployment reconciliation
-	typeReadyResource = "Ready"
-	// typeDeletedResource represents the status used when the custom resource is deleted and the finalizer operations are must to occur.
-	typeDeletedResource = "Deleted"
-)
-
 type Handler[S v1.Resource] interface {
 	Reconcile(ctx context.Context, obj S) (*ctrl.Result, error)
 	Delete(ctx context.Context, obj S) (*ctrl.Result, error)
+	SetDeletingMessage(ctx context.Context, obj S, msg string) error
+	SetReconcilingMessage(ctx context.Context, obj S, msg string) error
 }
 
 type SubReconcilerHandler[S v1.Resource] struct {
@@ -42,7 +38,7 @@ func (h *SubReconcilerHandler[S]) SetState(ctx context.Context, obj S, state v1.
 	log := log.FromContext(ctx)
 	obj.ReconcilableStatus().State = state
 	if err := h.Status().Update(ctx, obj); err != nil {
-		log.Error(err, "Failed to update Memcached status")
+		log.Error(err, "Failed to update status")
 		return err
 	}
 	h.RecordEvent(obj, string(state), "Set status to '%s'", string(state))
@@ -51,4 +47,43 @@ func (h *SubReconcilerHandler[S]) SetState(ctx context.Context, obj S, state v1.
 
 func (h *SubReconcilerHandler[S]) RecordEvent(obj S, reason string, msg string, args ...interface{}) {
 	h.Recorder.Eventf(obj, corev1.EventTypeWarning, reason, msg, args...)
+}
+
+func (h *SubReconcilerHandler[S]) SetConditionMessageByType(ctx context.Context, obj S, conditionType, msg string) error {
+	log := log.FromContext(ctx)
+
+	condition := meta.FindStatusCondition(obj.ReconcilableStatus().Conditions, conditionType)
+
+	// Condition doesn't exist and must be created
+	if condition == nil {
+		obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
+			Type:    conditionType,
+			Status:  metav1.ConditionTrue,
+			Reason:  ConditionReasonReconciling,
+			Message: msg,
+		})
+
+		// Condition exists and must be updated
+	} else {
+		condition.Message = msg
+		meta.SetStatusCondition(
+			&obj.ReconcilableStatus().Conditions,
+			*condition,
+		)
+	}
+
+	if err := h.Status().Update(ctx, obj); err != nil {
+		log.Error(err, "Failed to update object status")
+		return err
+	}
+	h.RecordEvent(obj, string(msg), "Set message to '%s'", string(msg))
+	return nil
+}
+
+func (h *SubReconcilerHandler[S]) SetDeletingMessage(ctx context.Context, obj S, msg string) error {
+	return h.SetConditionMessageByType(ctx, obj, ConditionReasonDeleting, msg)
+}
+
+func (h *SubReconcilerHandler[S]) SetReconcilingMessage(ctx context.Context, obj S, msg string) error {
+	return h.SetConditionMessageByType(ctx, obj, ConditionTypeReady, msg)
 }

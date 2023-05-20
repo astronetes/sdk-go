@@ -22,7 +22,7 @@ func (r *reconciler[S]) startReconciliation(ctx context.Context, req ctrl.Reques
 	if obj.ReconcilableStatus().Conditions == nil || len(obj.ReconcilableStatus().Conditions) == 0 {
 		obj.ReconcilableStatus().SetStatusCondition(
 			metav1.Condition{
-				Type:    typeReadyResource,
+				Type:    ConditionTypeReady,
 				Status:  metav1.ConditionUnknown,
 				Reason:  "Reconciling",
 				Message: "Starting reconciliation",
