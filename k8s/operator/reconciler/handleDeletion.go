@@ -29,7 +29,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 		if controllerutil.ContainsFinalizer(obj, r.finalizerName) {
 			log.Info("Performing Finalizer Operations for resource before delete CR")
 
-			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, typeDeletedResource, metav1.ConditionUnknown) {
+			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeDeleted, metav1.ConditionUnknown) {
 				obj.ReconcilableStatus().Attempts += 1
 			} else {
 				obj.ReconcilableStatus().Attempts = 1
@@ -38,9 +38,9 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 			// Let's add here an status "Downgrade" to define that this resource begin its process to be terminated.
 			obj.ReconcilableStatus().SetStatusCondition(
 				metav1.Condition{
-					Type:    typeDeletedResource,
+					Type:    ConditionTypeDeleted,
 					Status:  metav1.ConditionUnknown,
-					Reason:  "Finalizing",
+					Reason:  ConditionReasonFinalizing,
 					Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", obj.GetName()),
 				})
 
@@ -77,9 +77,9 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 			}
 
 			obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
-				Type:    typeDeletedResource,
+				Type:    ConditionTypeDeleted,
 				Status:  metav1.ConditionTrue,
-				Reason:  "Finalizing",
+				Reason:  ConditionReasonFinalizing,
 				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", obj.GetName()),
 			})
 
