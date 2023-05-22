@@ -21,7 +21,7 @@ func (r *reconciler[S]) updateStatus(ctx context.Context, req ctrl.Request, obj 
 	obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
 		Type:    ConditionTypeReady,
 		Status:  metav1.ConditionTrue,
-		Reason:  "Reconciled",
+		Reason:  ConditionReasonReconciled,
 		Message: MessageReconciliationCompleted,
 	})
 
