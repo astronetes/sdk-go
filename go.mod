@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.20
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.2
 	github.com/aws/aws-sdk-go-v2/service/acm v1.17.9
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.20.10
 	github.com/aws/aws-sdk-go-v2/service/iam v1.19.11
@@ -13,8 +14,10 @@ require (
 	github.com/aws/smithy-go v1.13.5
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
+	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/hairyhenderson/go-fsimpl v0.0.0-20230408234157-f9bd3abe0dd7
+	github.com/jarcoal/httpmock v1.3.0
 	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.4
 	go.opentelemetry.io/otel v1.14.0
@@ -43,7 +46,6 @@ require (
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.19 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.33 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.27 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.33 // indirect

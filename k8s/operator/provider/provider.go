@@ -2,52 +2,44 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
+	"github.com/astronetes/sdk-go/k8s/operator/errors"
+
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 type (
-	ID     string
-	Status int32
+	ID      string
+	GroupID string
 )
 
-const (
-	Uncreated = iota
-	OnCreation
-	Ready
-	OnDeletion
-	Deleted
-	Unknown
-)
-
-type Provider[T any, C any] interface {
-	SetUp(ctx context.Context, runtimeClient client.Client, cfg C) error
-	Status(ctx context.Context, obj T) Status
-	Create(ctx context.Context, obj T) error
-	Delete(ctx context.Context, obj T) error
-	CanBeUpdated(ctx context.Context, obj T) (bool, error)
-	CanBeDeleted(ctx context.Context, obj T) (bool, error)
+type Provider[T v1.Resource] interface {
+	SetUp(ctx context.Context, mgr manager.Manager, cfg Config) error
+	Create(ctx context.Context, obj T) (*ctrl.Result, error)
+	Delete(ctx context.Context, obj T) (*ctrl.Result, error)
 }
 
-type Manager[T any, C any] struct {
-	providers map[ID]Provider[T, C]
+type Manager[T v1.Resource] struct {
+	providers map[ID]Provider[T]
 }
 
-func (m Manager[T, C]) WithProvider(providerID ID, provider Provider[T, C]) Manager[T, C] {
+func (m Manager[T]) WithProvider(providerID ID, provider Provider[T]) Manager[T] {
 	if m.providers == nil {
-		m.providers = make(map[ID]Provider[T, C])
+		m.providers = make(map[ID]Provider[T])
 	}
 	m.providers[providerID] = provider
 	return m
 }
 
-func (m Manager[T, C]) Get(ctx context.Context, runtimeClient client.Client, cfg C, providerID ID) (Provider[T, C], error) {
+func (m Manager[T]) Get(ctx context.Context, mgr manager.Manager, cfg Config, providerID ID) (Provider[T], error) {
 	provider, ok := m.providers[providerID]
 	if !ok {
-		return nil, fmt.Errorf("unsupported provider id '%v' for handling this resource", providerID)
+		return nil, errors.ProviderError("unsupported provider id '%v' for handling this resource", providerID)
 	}
-	if err := provider.SetUp(ctx, runtimeClient, cfg); err != nil {
+	if err := provider.SetUp(ctx, mgr, cfg); err != nil {
 		return nil, err
 	}
 	return provider, nil

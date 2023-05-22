@@ -1,95 +1,17 @@
 package config
 
 import (
-	"math"
-	"time"
-
-	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
+	"github.com/astronetes/sdk-go/k8s/operator/reconciler"
 )
 
 type Config struct {
-	Controllers map[string]Controller `yaml:"controllers,omitempty"`
-	Monitoring  Monitoring            `yaml:"monitoring,omitempty"`
-}
-
-type Controller struct {
-	Timeout       *time.Duration        `yaml:"timeout,omitempty"`
-	MaxConditions int32                 `yaml:"maxConditions,omitempty"`
-	RequeueAfter  *time.Duration        `yaml:"requeueAfter,omitempty"`
-	Phases        []ReconciliationPhase `yaml:"phases,omitempty"`
-}
-
-func (ctrl Controller) getConfigForReconciliationPhase(code v1.PhaseCode) ReconciliationPhase {
-	for _, p := range ctrl.Phases {
-		if p.Name == code {
-			return p
-		}
-	}
-	return ReconciliationPhase{}
-}
-
-type ReconciliationPhase struct {
-	Name            v1.PhaseCode    `yaml:"name,omitempty"`
-	Timeout         *time.Duration  `yaml:"timeout,omitempty"`
-	Backoff         []time.Duration `yaml:"backoff,omitempty"`
-	RequeueAfter    *time.Duration  `yaml:"requeueAfter,omitempty"`
-	AllowedAttempts int32           `yaml:"allowedAttempts,omitempty"`
-	Meta            map[string]any  `yaml:"meta,omitempty"`
+	Controllers map[string]reconciler.Config `mapstructure:"controllers,omitempty"`
+	Monitoring  Monitoring                   `mapstructure:"monitoring,omitempty"`
+	Namespace   string                       `mapstructure:"namespace,omitempty"`
 }
 
 type Monitoring struct {
-	Address  string `yaml:"address,omitempty"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
+	Address  string `mapstructure:"address,omitempty"`
+	Username string `mapstructure:"username,omitempty"`
+	Password string `mapstructure:"password,omitempty"`
 }
-
-type Phase struct {
-	Timeout         *time.Duration  `yaml:"timeout,omitempty"`
-	MaxConditions   int32           `yaml:"maxConditions,omitempty"`
-	Backoff         []time.Duration `yaml:"backoff,omitempty"`
-	RequeueAfter    *time.Duration  `yaml:"requeueAfter,omitempty"`
-	AllowedAttempts int32           `yaml:"allowedAttempts,omitempty"`
-	Meta            map[string]any  `yaml:"meta,omitempty"`
-}
-
-func (cfg Phase) GetRequeueAfterByAttemptNumber(attempt int32) *time.Duration {
-	if cfg.AllowedAttempts > 0 && cfg.AllowedAttempts < attempt {
-		return nil
-	}
-	index := int(math.Min(float64(len(cfg.Backoff)-1), float64(attempt)))
-	if index < 0 {
-		return cfg.RequeueAfter
-	}
-	return &cfg.Backoff[index]
-}
-
-func (ctrl Controller) GetConfigForReconciliationPhase(code v1.PhaseCode) Phase {
-	out := Phase{
-		Timeout:         ctrl.Timeout,
-		MaxConditions:   ctrl.MaxConditions,
-		Backoff:         []time.Duration{},
-		RequeueAfter:    ctrl.RequeueAfter,
-		Meta:            map[string]any{},
-		AllowedAttempts: 1,
-	}
-	phase := ctrl.getConfigForReconciliationPhase(code)
-	if phase.Backoff != nil {
-		out.Backoff = phase.Backoff
-	}
-	if phase.RequeueAfter != nil {
-		out.RequeueAfter = phase.RequeueAfter
-	}
-	if phase.Meta != nil {
-		out.Meta = phase.Meta
-	}
-	if phase.Timeout != nil {
-		out.Timeout = phase.Timeout
-	}
-	// -1 means infinite tries
-	if phase.AllowedAttempts != 0 {
-		out.AllowedAttempts = phase.AllowedAttempts
-	}
-	return out
-}
-
-type ReconciliationPhaseSettings struct{}
