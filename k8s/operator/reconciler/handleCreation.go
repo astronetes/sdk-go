@@ -46,7 +46,6 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, ob
 	// Perform all operations required before remove the finalizer and allow
 	// the Kubernetes API to remove the custom resource.
 	res, err := r.subReconciler.Reconcile(ctx, obj)
-
 	if err != nil {
 		// Set Ready condition status to False
 		condition := meta.FindStatusCondition(obj.ReconcilableStatus().Conditions, ConditionTypeReady)

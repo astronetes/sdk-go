@@ -19,6 +19,4 @@ var (
 	MessageReconciliationCompleted = "Reconciliation completed"
 )
 
-var (
-	ErrorUpdatingStatus = "Failed to update resource status"
-)
+var ErrorUpdatingStatus = "Failed to update resource status"
