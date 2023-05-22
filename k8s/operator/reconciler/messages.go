@@ -9,6 +9,7 @@ var (
 
 var (
 	ConditionReasonReconciling = "Reconciling"
+	ConditionReasonReconciled  = "Reconciled"
 	ConditionReasonDeleting    = "Deleting"
 	ConditionReasonFinalizing  = "Finalizing"
 )
