@@ -10,6 +10,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+const defRandomLen = 10
+
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func RandStringRunes(n int) string {
@@ -21,5 +23,5 @@ func RandStringRunes(n int) string {
 }
 
 func RandString(prefix string) string {
-	return fmt.Sprintf("%v-%v", prefix, RandStringRunes(10))
+	return fmt.Sprintf("%v-%v", prefix, RandStringRunes(defRandomLen))
 }

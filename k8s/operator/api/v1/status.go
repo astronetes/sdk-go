@@ -10,7 +10,8 @@ type PhaseCode string
 type ReconcilableStatus struct {
 	State      PhaseCode          `json:"state"`
 	Attempts   int32              `json:"attempts"`
-	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" 
+		patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 func (r *ReconcilableStatus) SetState(state PhaseCode) {

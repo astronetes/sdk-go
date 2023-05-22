@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// handleCreation is a function of type subreconciler.FnWithRequest
+// handleCreation is a function of type subreconciler.FnWithRequest.
 func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
@@ -20,7 +20,8 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, ob
 	}
 
 	log.Info("Performing Reconciliation operations for the resource")
-	if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeReady, metav1.ConditionUnknown) {
+	if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeReady,
+		metav1.ConditionUnknown) {
 		obj.ReconcilableStatus().Attempts += 1
 	} else {
 		obj.ReconcilableStatus().Attempts = 1

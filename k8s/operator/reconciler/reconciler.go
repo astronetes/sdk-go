@@ -10,8 +10,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -86,9 +84,11 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 			if err != nil {
 				switch x := err.(type) {
 				case *errors2.ResourceError:
-					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()), "'%s', check documentation at '%s", x.Msg(), x.DocRef())
+					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()),
+						"'%s', check documentation at '%s", x.Msg(), x.DocRef())
 				case *errors2.ControllerError:
-					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()), "'%s', check documentation at '%s", x.Msg(), x.DocRef())
+					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()),
+						"'%s', check documentation at '%s", x.Msg(), x.DocRef())
 				default:
 					r.Recorder.Event(obj, corev1.EventTypeWarning, "Error", err.Error())
 				}
@@ -114,34 +114,7 @@ func (r *reconciler[S]) RecordEvent(obj S, reason string, msg string, args ...in
 }
 
 func (r *reconciler[S]) SetConditionMessageByType(ctx context.Context, obj S, conditionType, msg string) error {
-	log := log.FromContext(ctx)
-
-	condition := meta.FindStatusCondition(obj.ReconcilableStatus().Conditions, conditionType)
-
-	// Condition doesn't exist and must be created
-	if condition == nil {
-		obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
-			Type:    conditionType,
-			Status:  metav1.ConditionTrue,
-			Reason:  ConditionReasonReconciling,
-			Message: msg,
-		})
-
-		// Condition exists and must be updated
-	} else {
-		condition.Message = msg
-		meta.SetStatusCondition(
-			&obj.ReconcilableStatus().Conditions,
-			*condition,
-		)
-	}
-
-	if err := r.Status().Update(ctx, obj); err != nil {
-		log.Error(err, "Failed to update object status")
-		return err
-	}
-	r.RecordEvent(obj, string(msg), "Set message to '%s'", string(msg))
-	return nil
+	return setConditionMessageByType[S](ctx, r.Client, r.Recorder, obj, conditionType, msg)
 }
 
 func (r *reconciler[S]) SetDeletingMessage(ctx context.Context, obj S, msg string) error {
