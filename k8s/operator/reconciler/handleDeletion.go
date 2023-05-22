@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// handleDeletion is a function of type reconciler.FnWithRequest
+// handleDeletion is a function of type reconciler.FnWithRequest.
 func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
@@ -29,7 +29,8 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 		if controllerutil.ContainsFinalizer(obj, r.finalizerName) {
 			log.Info("Performing Finalizer Operations for resource before delete CR")
 
-			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeDeleted, metav1.ConditionUnknown) {
+			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeDeleted,
+				metav1.ConditionUnknown) {
 				obj.ReconcilableStatus().Attempts += 1
 			} else {
 				obj.ReconcilableStatus().Attempts = 1
@@ -77,10 +78,11 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 			}
 
 			obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
-				Type:    ConditionTypeDeleted,
-				Status:  metav1.ConditionTrue,
-				Reason:  ConditionReasonFinalizing,
-				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", obj.GetName()),
+				Type:   ConditionTypeDeleted,
+				Status: metav1.ConditionTrue,
+				Reason: ConditionReasonFinalizing,
+				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully "+
+					"accomplished", obj.GetName()),
 			})
 
 			if err := r.Status().Update(ctx, obj); err != nil {
