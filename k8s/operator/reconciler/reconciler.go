@@ -25,16 +25,16 @@ type Reconciler[S v1.Resource] interface {
 	Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error)
 }
 
-func NewReconciler[S v1.Resource](id string, mgr manager.Manager, finalizerName string,
-	config Config, subReconciler Handler[S],
+func New[S v1.Resource](id string, mgr manager.Manager, finalizerName string,
+	config Config, subreconciler Subreconciler[S],
 ) Reconciler[S] {
 	return &reconciler[S]{
 		Client:        mgr.GetClient(),
-		Scheme:        mgr.GetScheme(),
+		scheme:        mgr.GetScheme(),
 		finalizerName: finalizerName,
-		subReconciler: subReconciler,
-		Recorder:      mgr.GetEventRecorderFor(id),
-		Tracer:        otel.Tracer(id),
+		subreconciler: subreconciler,
+		recorder:      mgr.GetEventRecorderFor(id),
+		tracer:        otel.Tracer(id),
 		config:        config,
 	}
 }
@@ -43,10 +43,10 @@ type reconciler[S v1.Resource] struct {
 	client.Client
 	config        Config
 	finalizerName string
-	Recorder      record.EventRecorder
-	Tracer        trace.Tracer
-	Scheme        *runtime.Scheme
-	subReconciler Handler[S]
+	recorder      record.EventRecorder
+	tracer        trace.Tracer
+	scheme        *runtime.Scheme
+	subreconciler Subreconciler[S]
 }
 
 func (r *reconciler[S]) getLatest(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
@@ -68,7 +68,7 @@ func (r *reconciler[S]) getLatest(ctx context.Context, req ctrl.Request, obj S) 
 
 func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) (ctrl.Result, error) {
 	log := log2.FromContext(ctx)
-	r.Recorder.Event(obj, corev1.EventTypeNormal, ConditionReasonReconciling, "Starting the reconciliation process.")
+	r.recorder.Event(obj, corev1.EventTypeNormal, ConditionReasonReconciling, "Starting the reconciliation process.")
 	// The list of subreconcilers for resource
 	subreconcilersForResource := []func(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error){
 		r.startReconciliation,
@@ -84,13 +84,13 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 			if err != nil {
 				switch x := err.(type) {
 				case *errors2.ResourceError:
-					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()),
+					r.recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()),
 						"'%s', check documentation at '%s", x.Msg(), x.DocRef())
 				case *errors2.ControllerError:
-					r.Recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()),
+					r.recorder.Eventf(obj, corev1.EventTypeWarning, string(x.Code()),
 						"'%s', check documentation at '%s", x.Msg(), x.DocRef())
 				default:
-					r.Recorder.Event(obj, corev1.EventTypeWarning, "Error", err.Error())
+					r.recorder.Event(obj, corev1.EventTypeWarning, "Error", err.Error())
 				}
 			}
 			return Evaluate(res, err)
@@ -100,7 +100,7 @@ func (r *reconciler[S]) Reconcile(ctx context.Context, req ctrl.Request, obj S) 
 			return Evaluate(RequeueWithError(err))
 		}
 	}
-	r.Recorder.Event(obj, corev1.EventTypeNormal, ConditionReasonReconciling, MessageReconciliationCompleted)
+	r.recorder.Event(obj, corev1.EventTypeNormal, ConditionReasonReconciling, MessageReconciliationCompleted)
 	return Evaluate(DoNotRequeue())
 }
 
@@ -110,11 +110,11 @@ func (r *reconciler[S]) newObject() S {
 }
 
 func (r *reconciler[S]) RecordEvent(obj S, reason string, msg string, args ...interface{}) {
-	r.Recorder.Eventf(obj, corev1.EventTypeWarning, reason, msg, args...)
+	r.recorder.Eventf(obj, corev1.EventTypeWarning, reason, msg, args...)
 }
 
 func (r *reconciler[S]) SetConditionMessageByType(ctx context.Context, obj S, conditionType, msg string) error {
-	return setConditionMessageByType[S](ctx, r.Client, r.Recorder, obj, conditionType, msg)
+	return setConditionMessageByType[S](ctx, r.Client, r.recorder, obj, conditionType, msg)
 }
 
 func (r *reconciler[S]) SetDeletingMessage(ctx context.Context, obj S, msg string) error {

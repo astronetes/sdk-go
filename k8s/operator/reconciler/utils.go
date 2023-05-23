@@ -72,8 +72,6 @@ func setConditionMessageByType[S v1.Resource](ctx context.Context, client client
 			Reason:  ConditionReasonReconciling,
 			Message: msg,
 		})
-
-		// Condition exists and must be updated
 	} else {
 		condition.Message = msg
 		meta.SetStatusCondition(
