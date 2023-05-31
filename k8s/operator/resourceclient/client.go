@@ -30,3 +30,18 @@ func CreateOrUpdate[S client.Object](ctx context.Context, c client.Client, objec
 
 	return nil
 }
+
+func Delete[S client.Object](ctx context.Context, c client.Client, objectType, obj S) error {
+	namespacedName := types.NamespacedName{
+		Name:      obj.GetName(),
+		Namespace: obj.GetNamespace(),
+	}
+	err := c.Get(ctx, namespacedName, objectType)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	return c.Delete(ctx, obj)
+}
