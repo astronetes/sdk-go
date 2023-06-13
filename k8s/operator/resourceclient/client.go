@@ -23,6 +23,7 @@ func CreateOrUpdate[S client.Object](ctx context.Context, c client.Client, objec
 		}
 		return err
 	} else {
+		obj.SetResourceVersion(objectType.GetResourceVersion())
 		if err := c.Update(ctx, obj); err != nil {
 			return err
 		}
