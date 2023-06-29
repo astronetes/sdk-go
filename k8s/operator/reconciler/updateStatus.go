@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// updateStatus is a function of type subreconciler.FnWithRequest
+// updateStatus is a function of type subreconciler.FnWithRequest.
 func (r *reconciler[S]) updateStatus(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
@@ -17,7 +17,7 @@ func (r *reconciler[S]) updateStatus(ctx context.Context, req ctrl.Request, obj 
 	if r, err := r.getLatest(ctx, req, obj); ShouldHaltOrRequeue(r, err) {
 		return r, err
 	}
-	// The following implementation will update the status
+	// The following implementation will update the status.
 	obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
 		Type:    ConditionTypeReady,
 		Status:  metav1.ConditionTrue,

@@ -9,18 +9,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// handleCreation is a function of type subreconciler.FnWithRequest
+// handleCreation is a function of type subreconciler.FnWithRequest.
 func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
-	// Fetch the latest Memcached
-	// If this fails, bubble up the reconcile results to the main reconciler
+	// Fetch the latest version of the resource
 	if r, err := r.getLatest(ctx, req, obj); ShouldHaltOrRequeue(r, err) {
 		return r, err
 	}
 
 	log.Info("Performing Reconciliation operations for the resource")
-	if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeReady, metav1.ConditionUnknown) {
+	if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeReady,
+		metav1.ConditionUnknown) {
 		obj.ReconcilableStatus().Attempts += 1
 	} else {
 		obj.ReconcilableStatus().Attempts = 1
@@ -45,8 +45,7 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, ob
 
 	// Perform all operations required before remove the finalizer and allow
 	// the Kubernetes API to remove the custom resource.
-	res, err := r.subReconciler.Reconcile(ctx, obj)
-
+	res, err := r.subreconciler.HandleReconciliation(ctx, obj)
 	if err != nil {
 		// Set Ready condition status to False
 		condition := meta.FindStatusCondition(obj.ReconcilableStatus().Conditions, ConditionTypeReady)

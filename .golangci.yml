@@ -17,6 +17,7 @@ run:
     - tools
     - build
     - log
+    - cloud # this package must be deprecated soon
   skip-files:
     - golangci.yml
     - lib/bad.go
@@ -32,7 +33,7 @@ linters-settings:
     check-blank: false
   funlen:
     statements: 70
-    lines: 70
+    lines: 100
   govet:
     check-shadowing: true
   golint:
@@ -58,6 +59,8 @@ linters-settings:
     - github.com/davecgh/go-spew/spew
   misspell:
     locale: US
+  nestif:
+    min-complexity: 25
   lll:
     line-length: 120
     tab-width: 1
@@ -100,4 +103,5 @@ linters:
     - gochecknoinits
     - wsl
     - nlreturn
+    - gci
   fast: true

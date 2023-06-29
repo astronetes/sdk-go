@@ -12,12 +12,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// handleDeletion is a function of type reconciler.FnWithRequest
+// handleDeletion is a function of type reconciler.FnWithRequest.
 func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
-	// Fetch the latest Memcached
-	// If this fails, bubble up the reconcile results to the main reconciler
+	// Fetch the latest version of the resource
 	if r, err := r.getLatest(ctx, req, obj); ShouldHaltOrRequeue(r, err) {
 		return r, err
 	}
@@ -29,7 +28,8 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 		if controllerutil.ContainsFinalizer(obj, r.finalizerName) {
 			log.Info("Performing Finalizer Operations for resource before delete CR")
 
-			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeDeleted, metav1.ConditionUnknown) {
+			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeDeleted,
+				metav1.ConditionUnknown) {
 				obj.ReconcilableStatus().Attempts += 1
 			} else {
 				obj.ReconcilableStatus().Attempts = 1
@@ -51,8 +51,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 
 			// Perform all operations required before remove the finalizer and allow
 			// the Kubernetes API to remove the custom resource.
-			// TODO Check what can I do with the result....
-			res, err := r.subReconciler.Delete(ctx, obj)
+			res, err := r.subreconciler.HandleDeletion(ctx, obj)
 			if updateStatusErr := r.Status().Update(ctx, obj); updateStatusErr != nil {
 				log.Error(updateStatusErr, "Failed to update resource status")
 				return RequeueWithError(updateStatusErr)
@@ -77,14 +76,15 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 			}
 
 			obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
-				Type:    ConditionTypeDeleted,
-				Status:  metav1.ConditionTrue,
-				Reason:  ConditionReasonFinalizing,
-				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", obj.GetName()),
+				Type:   ConditionTypeDeleted,
+				Status: metav1.ConditionTrue,
+				Reason: ConditionReasonFinalizing,
+				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully "+
+					"accomplished", obj.GetName()),
 			})
 
 			if err := r.Status().Update(ctx, obj); err != nil {
-				log.Error(err, "Failed to update Memcached status")
+				log.Error(err, "Failed to update the resource status")
 				return RequeueWithError(err)
 			}
 

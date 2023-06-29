@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// setStatusToUnknown is a function of type subreconciler.FnWithRequest
+// setStatusToUnknown is a function of type subreconciler.FnWithRequest.
 func (r *reconciler[S]) startReconciliation(ctx context.Context, req ctrl.Request, obj S) (*ctrl.Result, error) {
 	log := log.FromContext(ctx)
 

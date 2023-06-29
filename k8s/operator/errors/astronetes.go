@@ -41,10 +41,14 @@ func (err *AstronetesError) Unwrap() error {
 	return err.err
 }
 
-func (err *AstronetesError) Dig() *AstronetesError {
-	var ew *AstronetesError
-	if errors.As(err.err, &ew) {
-		return ew.Dig()
+func (err *AstronetesError) Dig() error {
+	var resErr *ResourceError
+	if errors.As(err.err, &resErr) {
+		return resErr
 	}
-	return err
+	var ctrlErr *ControllerError
+	if errors.As(err.err, &ctrlErr) {
+		return ctrlErr
+	}
+	return err.err
 }
