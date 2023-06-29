@@ -137,7 +137,9 @@ func (c *client) IsInstalled(ctx context.Context, release string, statusFunc fun
 	return internal.IsCompleted(ctx, action, release)
 }
 
-func (c *client) GetReleaseInfo(ctx context.Context, release string, statusFunc func(install *action.Status)) (*release.Info, error) {
+func (c *client) GetReleaseInfo(ctx context.Context, release string, statusFunc func(install *action.Status)) (
+	*release.Info, error,
+) {
 	action := action.NewStatus(c.cfg)
 	statusFunc(action)
 
