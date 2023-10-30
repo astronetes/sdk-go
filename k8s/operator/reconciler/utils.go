@@ -2,6 +2,7 @@ package reconciler
 
 import (
 	"context"
+	"time"
 
 	v1 "github.com/astronetes/sdk-go/k8s/operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,6 +18,15 @@ import (
 // Requeue returns a controller result pairing specifying to
 // requeue with no error message implied. This returns no error.
 func Requeue() (*reconcile.Result, error) { return &ctrl.Result{Requeue: true}, nil }
+
+// RequeueAfter returns a controller result pairing specifying to
+// requeue after the given time.
+func RequeueAfter(after time.Duration) (*reconcile.Result, error) {
+	return &ctrl.Result{
+		Requeue:      true,
+		RequeueAfter: after,
+	}, nil
+}
 
 // RequeueWithError returns a controller result pairing specifying to
 // requeue with an error message.
