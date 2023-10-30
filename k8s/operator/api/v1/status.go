@@ -23,13 +23,7 @@ func (in *ReconcilableStatus) GetStatusCondition(conditionType string) *metav1.C
 		return nil
 	}
 
-	for _, condition := range in.Conditions {
-		if condition.Type == conditionType {
-			return &condition
-		}
-	}
-
-	return nil
+	return meta.FindStatusCondition(in.Conditions, conditionType)
 }
 
 func (in *ReconcilableStatus) SetStatusCondition(condition metav1.Condition) {
