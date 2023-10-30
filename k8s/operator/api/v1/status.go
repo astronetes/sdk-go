@@ -18,6 +18,20 @@ func (r *ReconcilableStatus) SetState(state PhaseCode) {
 	r.State = state
 }
 
+func (in *ReconcilableStatus) GetStatusCondition(conditionType string) *metav1.Condition {
+	if in.Conditions == nil {
+		return nil
+	}
+
+	for _, condition := range in.Conditions {
+		if condition.Type == conditionType {
+			return &condition
+		}
+	}
+
+	return nil
+}
+
 func (in *ReconcilableStatus) SetStatusCondition(condition metav1.Condition) {
 	if in.Conditions == nil {
 		in.Conditions = make([]metav1.Condition, 0)
