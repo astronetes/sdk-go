@@ -30,8 +30,6 @@ func (r *reconciler[S]) addFinalizer(ctx context.Context, req ctrl.Request, obj 
 			log.Error(err, "Failed to update custom resource to add finalizer")
 			return RequeueWithError(err)
 		}
-
-		return DoNotRequeue()
 	}
 
 	return ContinueReconciling()
