@@ -67,5 +67,22 @@ func (r *reconciler[S]) handleCreation(ctx context.Context, req ctrl.Request, ob
 		return res, err
 	}
 
+	if err := r.Get(ctx, req.NamespacedName, obj); err != nil {
+		log.Error(err, "Failed to re-fetch resource")
+		return RequeueWithError(err)
+	}
+
+	obj.ReconcilableStatus().SetStatusCondition(metav1.Condition{
+		Type:    ConditionTypeReady,
+		Status:  metav1.ConditionTrue,
+		Reason:  ConditionReasonReconciling,
+		Message: MessageReconciliationCompleted,
+	})
+
+	if err := r.Status().Update(ctx, obj); err != nil {
+		log.Error(err, ErrorUpdatingStatus)
+		return RequeueWithError(err)
+	}
+
 	return ContinueReconciling()
 }
