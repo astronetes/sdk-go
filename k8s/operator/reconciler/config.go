@@ -17,7 +17,7 @@ type Config struct {
 }
 
 func (c *Config) GetRequeueTimeForAttempt(attempt int) time.Duration {
-	if len(c.RequeueDelayTime) == 0 {
+	if len(c.RequeueDelayTime) == 0 || attempt == 0 {
 		return defaultRequeueTime
 	}
 	if len(c.RequeueDelayTime) < attempt {
