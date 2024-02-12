@@ -55,7 +55,7 @@ func (r *reconciler[S]) getLatest(ctx context.Context, req ctrl.Request, obj S) 
 		if apierrors.IsNotFound(err) {
 			// If the custom resource is not found then, it usually means that it was deleted or not created
 			// In this way, we will stop the reconciliation
-			log.Debug("the resource could not be found. Ignoring since object must be deleted")
+			log.V(1).Info("the resource could not be found. Ignoring since object must be deleted")
 			return DoNotRequeue()
 		}
 		// Error reading the object - requeue the request.
