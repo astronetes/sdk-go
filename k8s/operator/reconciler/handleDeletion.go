@@ -26,7 +26,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 	isResourceMarkedToBeDeleted := obj.GetDeletionTimestamp() != nil
 	if isResourceMarkedToBeDeleted {
 		if controllerutil.ContainsFinalizer(obj, r.finalizerName) {
-			log.Info("Performing Finalizer Operations for resource before delete CR")
+			log.Debug("Performing Finalizer Operations for resource before delete CR")
 
 			if meta.IsStatusConditionPresentAndEqual(obj.ReconcilableStatus().Conditions, ConditionTypeDeleted,
 				metav1.ConditionUnknown) {
@@ -88,7 +88,7 @@ func (r *reconciler[S]) handleDeletion(ctx context.Context, req ctrl.Request, ob
 				return RequeueWithError(err)
 			}
 
-			log.Info("Removing Finalizer for resource after successfully perform the operations")
+			log.Debug("Removing Finalizer for resource after successfully perform the operations")
 			if ok := controllerutil.RemoveFinalizer(obj, r.finalizerName); !ok {
 				log.Error(nil, "Failed to remove finalizer for resource")
 				return Requeue()

@@ -20,7 +20,7 @@ func (r *reconciler[S]) addFinalizer(ctx context.Context, req ctrl.Request, obj 
 	// occurs before the custom resource to be deleted.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers
 	if !controllerutil.ContainsFinalizer(obj, r.finalizerName) {
-		log.Info("Adding Finalizer for the resource")
+		log.Debug("Adding Finalizer for the resource")
 		if ok := controllerutil.AddFinalizer(obj, r.finalizerName); !ok {
 			log.Error(nil, "Failed to add finalizer into the custom resource")
 			return Requeue()
