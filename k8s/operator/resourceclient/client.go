@@ -8,6 +8,25 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+func CreateIfNotExists[S client.Object](ctx context.Context, c client.Client, objectType, obj S) error {
+	namespacedName := types.NamespacedName{
+		Name:      obj.GetName(),
+		Namespace: obj.GetNamespace(),
+	}
+	err := c.Get(ctx, namespacedName, objectType)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			if err := c.Create(ctx, obj); err != nil {
+				return err
+			}
+			return nil
+		}
+		return err
+	}
+
+	return nil
+}
+
 func CreateOrUpdate[S client.Object](ctx context.Context, c client.Client, objectType, obj S) error {
 	namespacedName := types.NamespacedName{
 		Name:      obj.GetName(),
